@@ -3,8 +3,8 @@ package com.iptvcoco.app.ui.login
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.iptvcoco.app.databinding.ActivityLoginBinding
 import com.iptvcoco.app.ui.main.MainActivity
@@ -31,7 +31,7 @@ class LoginActivity : AppCompatActivity() {
             val password = binding.etPassword.text.toString().trim()
 
             if (url.isEmpty()) {
-                binding.etUrl.error = "URL is required"
+                binding.etUrl.error = getString(com.iptvcoco.app.R.string.url_required)
                 return@setOnClickListener
             }
 
@@ -52,7 +52,7 @@ class LoginActivity : AppCompatActivity() {
                 is LoginViewModel.LoginState.Error -> {
                     binding.progressBar.visibility = View.GONE
                     binding.btnLogin.isEnabled = true
-                    Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                    showRetryDialog(state.message)
                 }
                 else -> {
                     binding.progressBar.visibility = View.GONE
@@ -60,6 +60,17 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun showRetryDialog(message: String) {
+        AlertDialog.Builder(this)
+            .setTitle(com.iptvcoco.app.R.string.connection_failed)
+            .setMessage(getString(com.iptvcoco.app.R.string.connection_failed_message, message))
+            .setPositiveButton(com.iptvcoco.app.R.string.try_again) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     private fun navigateToMain() {

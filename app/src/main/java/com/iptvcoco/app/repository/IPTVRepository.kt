@@ -176,10 +176,12 @@ class IPTVRepository(context: Context) {
 
     private fun fetchM3UContent(account: M3UAccount): String {
         var urlStr = account.url
-        if (!account.username.isNullOrBlank() && !account.password.isNullOrBlank()) {
+        if (!account.username.isNullOrBlank()) {
             urlStr = urlStr.replace("USERNAME", account.username)
-                .replace("PASSWORD", account.password)
                 .replace("{username}", account.username)
+        }
+        if (!account.password.isNullOrBlank()) {
+            urlStr = urlStr.replace("PASSWORD", account.password)
                 .replace("{password}", account.password)
         }
         val url = URL(urlStr)
@@ -188,6 +190,10 @@ class IPTVRepository(context: Context) {
         connection.readTimeout = 15000
         connection.requestMethod = "GET"
         try {
+            val responseCode = connection.responseCode
+            if (responseCode !in 200..299) {
+                throw Exception("Server returned HTTP $responseCode")
+            }
             return connection.inputStream.bufferedReader().use { it.readText() }
         } finally {
             connection.disconnect()
