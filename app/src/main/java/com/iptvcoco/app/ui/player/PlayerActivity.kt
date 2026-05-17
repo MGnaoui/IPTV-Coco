@@ -13,11 +13,14 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.iptvcoco.app.R
 import com.iptvcoco.app.databinding.ActivityPlayerBinding
+import com.iptvcoco.app.model.Channel
 import com.iptvcoco.app.repository.IPTVRepository
 
 class PlayerActivity : AppCompatActivity() {
@@ -32,6 +35,10 @@ class PlayerActivity : AppCompatActivity() {
     private var contentId: String? = null
     private var streamUrl: String? = null
     private var title: String? = null
+    private var contentType: String = TYPE_LIVE
+
+    private var channelList: List<Channel> = emptyList()
+    private var currentChannelIndex: Int = -1
 
     private lateinit var audioManager: AudioManager
     private var maxVolume = 0
@@ -57,9 +64,14 @@ class PlayerActivity : AppCompatActivity() {
 
         streamUrl = intent.getStringExtra(EXTRA_STREAM_URL)
         title = intent.getStringExtra(EXTRA_TITLE)
-        val type = intent.getStringExtra(EXTRA_TYPE) ?: TYPE_LIVE
+        contentType = intent.getStringExtra(EXTRA_TYPE) ?: TYPE_LIVE
         contentId = intent.getStringExtra(EXTRA_ID)
-        isLive = type == TYPE_LIVE
+        isLive = contentType == TYPE_LIVE
+
+        if (isLive) {
+            channelList = repository.getChannels()
+            currentChannelIndex = channelList.indexOfFirst { it.id == contentId }
+        }
 
         binding.tvTitle.text = title
 
@@ -85,7 +97,13 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initializePlayer() {
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+            .build()
+
         player = ExoPlayer.Builder(this).build().apply {
+            setAudioAttributes(audioAttributes, true)
             binding.playerView.player = this
             streamUrl?.let { url ->
                 setMediaItem(MediaItem.fromUri(url))
@@ -123,12 +141,18 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         binding.btnChannelUp.setOnClickListener {
-            // Navigate to next channel in Live TV context
+            if (isLive && channelList.isNotEmpty()) {
+                currentChannelIndex = (currentChannelIndex + 1) % channelList.size
+                switchToChannel(channelList[currentChannelIndex])
+            }
             resetControlsTimer()
         }
 
         binding.btnChannelDown.setOnClickListener {
-            // Navigate to previous channel in Live TV context
+            if (isLive && channelList.isNotEmpty()) {
+                currentChannelIndex = (currentChannelIndex - 1 + channelList.size) % channelList.size
+                switchToChannel(channelList[currentChannelIndex])
+            }
             resetControlsTimer()
         }
 
@@ -174,9 +198,15 @@ class PlayerActivity : AppCompatActivity() {
             resetControlsTimer()
         }
 
+        updateFavoriteButton()
         binding.btnFavorite.setOnClickListener {
             contentId?.let { id ->
-                if (isLive) repository.toggleFavoriteChannel(id)
+                when {
+                    isLive -> repository.toggleFavoriteChannel(id)
+                    contentType == TYPE_MOVIE -> repository.toggleFavoriteMovie(id)
+                    contentType == TYPE_SERIES -> repository.toggleFavoriteSeries(id)
+                }
+                updateFavoriteButton()
             }
             resetControlsTimer()
         }
@@ -260,6 +290,21 @@ class PlayerActivity : AppCompatActivity() {
         }, 1000)
     }
 
+    private fun switchToChannel(channel: Channel) {
+        streamUrl = channel.streamUrl
+        title = channel.name
+        contentId = channel.id
+        binding.tvTitle.text = title
+
+        player?.let { exoPlayer ->
+            exoPlayer.stop()
+            exoPlayer.clearMediaItems()
+            exoPlayer.setMediaItem(MediaItem.fromUri(channel.streamUrl))
+            exoPlayer.prepare()
+            exoPlayer.play()
+        }
+    }
+
     private fun adjustBrightness(delta: Float) {
         val layoutParams = window.attributes
         var brightness = layoutParams.screenBrightness
@@ -288,6 +333,24 @@ class PlayerActivity : AppCompatActivity() {
         player = null
     }
 
+    private fun updateFavoriteButton() {
+        contentId?.let { id ->
+            val isFav = when {
+                isLive -> repository.isFavoriteChannel(id)
+                contentType == TYPE_MOVIE -> repository.isFavoriteMovie(id)
+                contentType == TYPE_SERIES -> repository.isFavoriteSeries(id)
+                else -> false
+            }
+            binding.btnFavorite.setImageResource(
+                if (isFav) R.drawable.ic_favorite_filled else R.drawable.ic_favorite
+            )
+            binding.btnFavorite.setColorFilter(
+                if (isFav) getColor(R.color.red_netflix) else getColor(R.color.white)
+            )
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         super.onBackPressed()
         finish()

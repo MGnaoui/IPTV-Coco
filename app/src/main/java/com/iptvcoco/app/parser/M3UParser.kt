@@ -25,10 +25,16 @@ object M3UParser {
             val line = lines[i].trim()
             if (line.startsWith("#EXTINF:")) {
                 val infoLine = line
-                val urlLine = if (i + 1 < lines.size) lines[i + 1].trim() else ""
-                i += 2
+                var j = i + 1
+                while (j < lines.size) {
+                    val next = lines[j].trim()
+                    if (next.isNotEmpty() && !next.startsWith("#")) break
+                    j++
+                }
+                val urlLine = if (j < lines.size) lines[j].trim() else ""
+                i = j + 1
 
-                if (urlLine.isNotEmpty() && !urlLine.startsWith("#")) {
+                if (urlLine.isNotEmpty()) {
                     val attrs = parseAttributes(infoLine)
                     val name = parseName(infoLine)
                     val groupTitle = attrs["group-title"] ?: "General"
@@ -152,7 +158,7 @@ object M3UParser {
 
     private fun parseAttributes(line: String): Map<String, String> {
         val map = mutableMapOf<String, String>()
-        val regex = """([\w-]+)="([^"]*)")""".toRegex()
+        val regex = """([\w-]+)="([^"]*)"""".toRegex()
         regex.findAll(line).forEach { match ->
             map[match.groupValues[1]] = match.groupValues[2]
         }
@@ -169,16 +175,31 @@ object M3UParser {
     }
 
     private fun detectType(attrs: Map<String, String>, url: String, infoLine: String): ContentType {
+        // 1. Trust explicit attributes first
         if (attrs["series-name"] != null || attrs["season"] != null) return ContentType.SERIES
-        val lower = infoLine.lowercase()
-        if (lower.contains("movie") || lower.contains("film")) return ContentType.MOVIE
+        val attrType = attrs["type"]?.lowercase()
+        if (attrType == "movie" || attrType == "vod") return ContentType.MOVIE
+        if (attrType == "series") return ContentType.SERIES
+
+        // 2. Check group-title hints
+        val groupTitle = attrs["group-title"]?.lowercase() ?: ""
+        if (groupTitle.contains("movie") || groupTitle.contains("vod") || groupTitle.contains("film")) return ContentType.MOVIE
+        if (groupTitle.contains("series") || groupTitle.contains("tv show") || groupTitle.contains("shows")) return ContentType.SERIES
+
+        // 3. Check URL path segments
         val urlLower = url.lowercase()
-        if (urlLower.contains("/movie/") || urlLower.contains("movie")) return ContentType.MOVIE
-        if (urlLower.contains("/series/") || urlLower.contains("serie")) return ContentType.SERIES
+        if (urlLower.contains("/movie/") || urlLower.contains("/movies/") || urlLower.contains("/vod/")) return ContentType.MOVIE
+        if (urlLower.contains("/series/") || urlLower.contains("/serie/") || urlLower.contains("/show/")) return ContentType.SERIES
+
+        // 4. Weak hint from channel name only (the part after the last comma)
+        val namePart = infoLine.substringAfterLast(",").lowercase()
+        if (namePart.contains("movie") || namePart.contains("film")) return ContentType.MOVIE
+
+        // Default: assume live TV
         return ContentType.LIVE
     }
 
-    private fun generateMockEPG(channelName: String): List<EPGEntry> {
+    internal fun generateMockEPG(channelName: String): List<EPGEntry> {
         val now = System.currentTimeMillis()
         val hour = 3600000L
         return listOf(

@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.iptvcoco.app.adapter.CategoryAdapter
 import com.iptvcoco.app.adapter.ChannelAdapter
 import com.iptvcoco.app.adapter.EpgAdapter
@@ -57,6 +57,7 @@ class LiveTVFragment : Fragment() {
             if (viewModel.selectedChannel.value == null && it.isNotEmpty()) {
                 viewModel.selectChannel(it.first())
             }
+            binding.tvEmptyChannels.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
         }
 
         viewModel.selectedChannel.observe(viewLifecycleOwner) { channel ->
@@ -65,9 +66,11 @@ class LiveTVFragment : Fragment() {
     }
 
     private fun setupCategories() {
-        categoryAdapter = CategoryAdapter { category ->
-            viewModel.selectCategory(category)
-        }
+        categoryAdapter = CategoryAdapter(
+            onCategorySelected = { category ->
+                viewModel.selectCategory(category)
+            }
+        )
         binding.rvCategories.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = categoryAdapter
@@ -79,6 +82,12 @@ class LiveTVFragment : Fragment() {
             onChannelClick = { channel ->
                 viewModel.selectChannel(channel)
                 openPlayer(channel)
+            },
+            onFavoriteClick = { channelId, _ ->
+                viewModel.toggleFavorite(channelId)
+            },
+            isFavorite = { channelId ->
+                viewModel.isFavorite(channelId)
             }
         )
         binding.rvChannels.apply {
@@ -119,7 +128,12 @@ class LiveTVFragment : Fragment() {
         if (!channel.logo.isNullOrBlank()) {
             Glide.with(this)
                 .load(channel.logo)
+                .placeholder(R.drawable.ic_live)
+                .error(R.drawable.ic_live)
+                .transition(DrawableTransitionOptions.withCrossFade(300))
                 .into(binding.ivPreview)
+        } else {
+            binding.ivPreview.setImageResource(R.drawable.ic_live)
         }
         epgAdapter.submitList(channel.epg)
     }

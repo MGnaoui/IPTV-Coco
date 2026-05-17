@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">IPTV Coco</string>
+    <string name="app_subtitle">Your playlist, your way</string>
+    <string name="m3u_login">M3U Login</string>
+    <string name="login_prompt">Enter your playlist credentials to get started</string>
+    <string name="not_connected">Not connected</string>
+    <string name="connected">Connected</string>
+    <string name="connection_error">Connection failed</string>
     <string name="live_tv">Live TV</string>
     <string name="movies">Movies</string>
     <string name="series">Series</string>
@@ -25,7 +31,7 @@
     <string name="login">Login</string>
     <string name="m3u_url">M3U URL</string>
     <string name="password">Password</string>
-    <string name="username">Username (optional)</string>
+    <string name="username">Username</string>
     <string name="runtime">Runtime</string>
     <string name="rating">Rating</string>
     <string name="cast">Cast</string>
@@ -37,7 +43,20 @@
     <string name="no_favorites">No favorites yet</string>
     <string name="empty_state">Nothing to show</string>
     <string name="url_required">URL is required</string>
+    <string name="username_required">Username is required</string>
+    <string name="login_type_m3u">M3U Playlist</string>
+    <string name="login_type_xtream">Xtream Codes</string>
     <string name="connection_failed">Connection Failed</string>
     <string name="connection_failed_message">Could not connect to the playlist.\n\nError: %1$s\n\nPlease check your details and try again.</string>
     <string name="try_again">Try Again</string>
+    <string name="user_menu">User Menu</string>
+    <string name="refresh_playlist">Refresh Playlist</string>
+    <string name="logout">Logout</string>
+    <string name="close">Close</string>
+    <string name="not_available">N/A</string>
+    <string name="username_label">Username: %1$s</string>
+    <string name="last_refresh_label">Last Refresh: %1$s</string>
+    <string name="status_label">Status: %1$s</string>
+    <string name="refresh_failed">Refresh Failed</string>
+    <string name="unknown_error">An unknown error occurred</string>
 </resources>

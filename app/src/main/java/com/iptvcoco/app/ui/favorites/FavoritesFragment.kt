@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.iptvcoco.app.adapter.ChannelAdapter
 import com.iptvcoco.app.adapter.MovieAdapter
@@ -45,12 +44,15 @@ class FavoritesFragment : Fragment() {
 
         viewModel.favoriteChannels.observe(viewLifecycleOwner) {
             channelAdapter.submitList(it)
+            updateEmptyState()
         }
         viewModel.favoriteMovies.observe(viewLifecycleOwner) {
             movieAdapter.submitList(it)
+            updateEmptyState()
         }
         viewModel.favoriteSeries.observe(viewLifecycleOwner) {
             seriesAdapter.submitList(it)
+            updateEmptyState()
         }
 
         viewModel.loadFavorites()
@@ -67,6 +69,13 @@ class FavoritesFragment : Fragment() {
                 }
                 startActivity(intent)
             },
+            onFavoriteClick = { channelId, _ ->
+                viewModel.toggleFavoriteChannel(channelId)
+                viewModel.loadFavorites()
+            },
+            isFavorite = { channelId ->
+                viewModel.isFavoriteChannel(channelId)
+            },
             layoutRes = R.layout.item_channel_horizontal
         )
         binding.rvChannels.apply {
@@ -74,27 +83,53 @@ class FavoritesFragment : Fragment() {
             adapter = channelAdapter
         }
 
-        movieAdapter = MovieAdapter { movie ->
-            val intent = Intent(requireContext(), MovieDetailActivity::class.java).apply {
-                putExtra(MovieDetailActivity.EXTRA_MOVIE_ID, movie.id)
+        movieAdapter = MovieAdapter(
+            onMovieClick = { movie ->
+                val intent = Intent(requireContext(), MovieDetailActivity::class.java).apply {
+                    putExtra(MovieDetailActivity.EXTRA_MOVIE_ID, movie.id)
+                }
+                startActivity(intent)
+            },
+            onFavoriteClick = { movieId, _ ->
+                viewModel.toggleFavoriteMovie(movieId)
+                viewModel.loadFavorites()
+            },
+            isFavorite = { movieId ->
+                viewModel.isFavoriteMovie(movieId)
             }
-            startActivity(intent)
-        }
+        )
         binding.rvMovies.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = movieAdapter
         }
 
-        seriesAdapter = SeriesAdapter { series ->
-            val intent = Intent(requireContext(), SeriesDetailActivity::class.java).apply {
-                putExtra(SeriesDetailActivity.EXTRA_SERIES_ID, series.id)
+        seriesAdapter = SeriesAdapter(
+            onSeriesClick = { series ->
+                val intent = Intent(requireContext(), SeriesDetailActivity::class.java).apply {
+                    putExtra(SeriesDetailActivity.EXTRA_SERIES_ID, series.id)
+                }
+                startActivity(intent)
+            },
+            onFavoriteClick = { seriesId, _ ->
+                viewModel.toggleFavoriteSeries(seriesId)
+                viewModel.loadFavorites()
+            },
+            isFavorite = { seriesId ->
+                viewModel.isFavoriteSeries(seriesId)
             }
-            startActivity(intent)
-        }
+        )
         binding.rvSeries.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = seriesAdapter
         }
+    }
+
+    private fun updateEmptyState() {
+        val hasAny = viewModel.favoriteChannels.value?.isNotEmpty() == true ||
+                viewModel.favoriteMovies.value?.isNotEmpty() == true ||
+                viewModel.favoriteSeries.value?.isNotEmpty() == true
+        binding.tvEmpty.visibility = if (hasAny) View.GONE else View.VISIBLE
+        binding.contentLayout.visibility = if (hasAny) View.VISIBLE else View.GONE
     }
 
     override fun onResume() {

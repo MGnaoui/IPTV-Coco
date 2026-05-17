@@ -17,6 +17,7 @@ class PreferencesManager(context: Context) {
         private const val KEY_FAVORITE_MOVIES = "favorite_movies"
         private const val KEY_FAVORITE_SERIES = "favorite_series"
         private const val KEY_RESUME_POSITIONS = "resume_positions"
+        private const val KEY_LAST_REFRESH = "last_refresh"
     }
 
     fun saveAccount(account: M3UAccount) {
@@ -25,7 +26,13 @@ class PreferencesManager(context: Context) {
 
     fun getAccount(): M3UAccount? {
         val json = prefs.getString(KEY_ACCOUNT, null) ?: return null
-        return gson.fromJson(json, M3UAccount::class.java)
+        return try {
+            gson.fromJson(json, M3UAccount::class.java)
+        } catch (_: Exception) {
+            // Clear corrupted account data
+            prefs.edit().remove(KEY_ACCOUNT).apply()
+            null
+        }
     }
 
     fun clearAccount() {
@@ -106,6 +113,14 @@ class PreferencesManager(context: Context) {
         val json = prefs.getString(KEY_RESUME_POSITIONS, null) ?: return emptyMap()
         val type = object : TypeToken<Map<String, Long>>() {}.type
         return gson.fromJson(json, type) ?: emptyMap()
+    }
+
+    fun saveLastRefresh(timestamp: Long) {
+        prefs.edit().putLong(KEY_LAST_REFRESH, timestamp).apply()
+    }
+
+    fun getLastRefresh(): Long {
+        return prefs.getLong(KEY_LAST_REFRESH, 0L)
     }
 
     fun clearAll() {

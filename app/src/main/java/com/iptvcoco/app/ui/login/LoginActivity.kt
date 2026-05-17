@@ -1,12 +1,16 @@
 package com.iptvcoco.app.ui.login
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.iptvcoco.app.R
 import com.iptvcoco.app.databinding.ActivityLoginBinding
+import com.iptvcoco.app.model.M3UAccount
 import com.iptvcoco.app.ui.main.MainActivity
 import com.iptvcoco.app.viewmodel.LoginViewModel
 
@@ -31,31 +35,48 @@ class LoginActivity : AppCompatActivity() {
             val password = binding.etPassword.text.toString().trim()
 
             if (url.isEmpty()) {
-                binding.etUrl.error = getString(com.iptvcoco.app.R.string.url_required)
+                binding.etUrl.error = getString(R.string.url_required)
+                return@setOnClickListener
+            }
+            if (username.isEmpty()) {
+                binding.etUsername.error = getString(R.string.username_required)
                 return@setOnClickListener
             }
 
-            viewModel.login(url, username, password)
+            val type = when (binding.rgLoginType.checkedRadioButtonId) {
+                R.id.rbXtream -> M3UAccount.AccountType.XTREAM
+                else -> M3UAccount.AccountType.M3U
+            }
+
+            viewModel.login(url, username, password, type)
         }
 
         viewModel.loginState.observe(this) { state ->
             when (state) {
                 is LoginViewModel.LoginState.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
+                    binding.tvConnectionStatus.visibility = View.GONE
                     binding.btnLogin.isEnabled = false
                 }
                 is LoginViewModel.LoginState.Success -> {
                     binding.progressBar.visibility = View.GONE
                     binding.btnLogin.isEnabled = true
-                    navigateToMain()
+                    binding.tvConnectionStatus.visibility = View.VISIBLE
+                    binding.tvConnectionStatus.text = getString(R.string.connected)
+                    binding.tvConnectionStatus.setTextColor(ContextCompat.getColor(this, R.color.red_netflix))
+                    binding.tvConnectionStatus.postDelayed({ navigateToMain() }, 600)
                 }
                 is LoginViewModel.LoginState.Error -> {
                     binding.progressBar.visibility = View.GONE
                     binding.btnLogin.isEnabled = true
+                    binding.tvConnectionStatus.visibility = View.VISIBLE
+                    binding.tvConnectionStatus.text = getString(R.string.connection_error)
+                    binding.tvConnectionStatus.setTextColor(Color.parseColor("#FF4444"))
                     showRetryDialog(state.message)
                 }
                 else -> {
                     binding.progressBar.visibility = View.GONE
+                    binding.tvConnectionStatus.visibility = View.GONE
                     binding.btnLogin.isEnabled = true
                 }
             }
@@ -64,9 +85,9 @@ class LoginActivity : AppCompatActivity() {
 
     private fun showRetryDialog(message: String) {
         AlertDialog.Builder(this)
-            .setTitle(com.iptvcoco.app.R.string.connection_failed)
-            .setMessage(getString(com.iptvcoco.app.R.string.connection_failed_message, message))
-            .setPositiveButton(com.iptvcoco.app.R.string.try_again) { dialog, _ ->
+            .setTitle(R.string.connection_failed)
+            .setMessage(getString(R.string.connection_failed_message, message))
+            .setPositiveButton(R.string.try_again) { dialog, _ ->
                 dialog.dismiss()
             }
             .setCancelable(false)

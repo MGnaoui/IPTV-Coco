@@ -29,6 +29,20 @@
             app:layout_constraintStart_toStartOf="@id/ivBanner"
             app:layout_constraintTop_toTopOf="@id/ivBanner" />
 
+        <!-- Favorite button on banner -->
+        <ImageButton
+            android:id="@+id/btnFavorite"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_margin="16dp"
+            android:background="@drawable/bg_favorite_badge"
+            android:contentDescription="@string/favorite"
+            android:padding="10dp"
+            android:src="@drawable/ic_favorite"
+            android:tint="@color/white"
+            app:layout_constraintEnd_toEndOf="@id/ivBanner"
+            app:layout_constraintTop_toTopOf="@id/ivBanner" />
+
         <LinearLayout
             android:id="@+id/contentLayout"
             android:layout_width="0dp"
@@ -41,76 +55,66 @@
 
             <TextView
                 android:id="@+id/tvTitle"
+                style="@style/DetailTitle"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:textSize="28sp"
-                android:textStyle="bold" />
+                android:layout_height="wrap_content" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/tvRating"
+                    style="@style/DetailMetadata"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="8dp"
+                    android:text="•"
                     android:textColor="@color/gray_text"
                     android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvYear"
+                    style="@style/DetailMetadata"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:textColor="@color/gray_text"
-                    android:textSize="14sp" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
             <TextView
+                style="@style/DetailSectionHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/plot"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:text="@string/plot" />
 
             <TextView
                 android:id="@+id/tvPlot"
+                style="@style/DetailBody"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/gray_text"
-                android:textSize="14sp" />
+                android:layout_height="wrap_content" />
 
             <TextView
+                style="@style/DetailSectionHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/cast"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:text="@string/cast" />
 
             <TextView
                 android:id="@+id/tvCast"
+                style="@style/DetailBody"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/gray_text"
-                android:textSize="14sp" />
+                android:layout_height="wrap_content" />
 
             <TextView
+                style="@style/DetailSectionHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/select_episode"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:text="@string/select_episode" />
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabSeasons"
@@ -119,6 +123,8 @@
                 android:layout_marginTop="8dp"
                 android:background="@color/dark_surface"
                 app:tabIndicatorColor="@color/red_netflix"
+                app:tabIndicatorHeight="3dp"
+                app:tabMode="scrollable"
                 app:tabSelectedTextColor="@color/white"
                 app:tabTextColor="@color/gray_text" />
 

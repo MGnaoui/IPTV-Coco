@@ -15,10 +15,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _loginState = MutableLiveData<LoginState>()
     val loginState: LiveData<LoginState> = _loginState
 
-    fun login(url: String, username: String, password: String) {
+    fun login(url: String, username: String, password: String, type: M3UAccount.AccountType) {
         _loginState.value = LoginState.Loading
         viewModelScope.launch {
-            val account = M3UAccount(url, username.ifBlank { null }, password.ifBlank { null })
+            val account = M3UAccount(url, username, password, type)
             val result = repository.login(account)
             _loginState.value = if (result.isSuccess) {
                 LoginState.Success

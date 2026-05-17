@@ -26,4 +26,20 @@ class FavoritesViewModel(application: Application) : AndroidViewModel(applicatio
         _favoriteMovies.value = repository.getFavoriteMovies()
         _favoriteSeries.value = repository.getFavoriteSeries()
     }
+
+    fun toggleFavoriteChannel(channelId: String) {
+        repository.toggleFavoriteChannel(channelId)
+    }
+
+    fun toggleFavoriteMovie(movieId: String) {
+        repository.toggleFavoriteMovie(movieId)
+    }
+
+    fun toggleFavoriteSeries(seriesId: String) {
+        repository.toggleFavoriteSeries(seriesId)
+    }
+
+    fun isFavoriteChannel(channelId: String): Boolean = repository.isFavoriteChannel(channelId)
+    fun isFavoriteMovie(movieId: String): Boolean = repository.isFavoriteMovie(movieId)
+    fun isFavoriteSeries(seriesId: String): Boolean = repository.isFavoriteSeries(seriesId)
 }

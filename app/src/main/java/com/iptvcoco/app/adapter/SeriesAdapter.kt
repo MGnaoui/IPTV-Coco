@@ -7,11 +7,14 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.iptvcoco.app.R
 import com.iptvcoco.app.model.Series
 
 class SeriesAdapter(
-    private val onSeriesClick: (Series) -> Unit
+    private val onSeriesClick: (Series) -> Unit,
+    private val onFavoriteClick: ((String, Boolean) -> Unit)? = null,
+    private val isFavorite: (String) -> Boolean = { false }
 ) : RecyclerView.Adapter<SeriesAdapter.ViewHolder>() {
 
     private var items = listOf<Series>()
@@ -36,12 +39,22 @@ class SeriesAdapter(
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val poster: ImageView = itemView.findViewById(R.id.ivPoster)
         private val title: TextView = itemView.findViewById(R.id.tvTitle)
+        private val favoriteIcon: ImageView = itemView.findViewById(R.id.ivFavorite)
 
         init {
             itemView.setOnClickListener {
                 val pos = adapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
                     onSeriesClick(items[pos])
+                }
+            }
+            favoriteIcon.setOnClickListener {
+                val pos = adapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    val series = items[pos]
+                    val fav = !isFavorite(series.id)
+                    onFavoriteClick?.invoke(series.id, fav)
+                    updateFavoriteIcon(fav)
                 }
             }
         }
@@ -52,10 +65,23 @@ class SeriesAdapter(
                 Glide.with(poster.context)
                     .load(series.poster)
                     .placeholder(R.drawable.ic_tv)
+                    .error(R.drawable.ic_tv)
+                    .transition(DrawableTransitionOptions.withCrossFade(300))
                     .into(poster)
             } else {
                 poster.setImageResource(R.drawable.ic_tv)
             }
+            updateFavoriteIcon(isFavorite(series.id))
+        }
+
+        private fun updateFavoriteIcon(isFav: Boolean) {
+            favoriteIcon.setImageResource(
+                if (isFav) R.drawable.ic_favorite_filled else R.drawable.ic_favorite
+            )
+            favoriteIcon.setColorFilter(
+                if (isFav) itemView.context.getColor(R.color.favorite_active)
+                else itemView.context.getColor(R.color.favorite_inactive)
+            )
         }
     }
 }

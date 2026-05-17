@@ -1,6 +1,7 @@
 package com.iptvcoco.app.ui.movies
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.iptvcoco.app.R
 import com.iptvcoco.app.adapter.CategoryAdapter
 import com.iptvcoco.app.adapter.MovieAdapter
 import com.iptvcoco.app.databinding.FragmentMoviesBinding
@@ -46,39 +48,60 @@ class MoviesFragment : Fragment() {
 
         viewModel.movies.observe(viewLifecycleOwner) {
             movieAdapter.submitList(it)
+            binding.tvEmpty.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
         }
     }
 
     private fun setupCategories() {
-        categoryAdapter = CategoryAdapter { category ->
-            viewModel.selectCategory(category)
-        }
+        val isPortrait = resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        categoryAdapter = CategoryAdapter(
+            onCategorySelected = { category ->
+                viewModel.selectCategory(category)
+            },
+            layoutRes = if (isPortrait) R.layout.item_category_chip else R.layout.item_category
+        )
         binding.rvCategories.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = if (isPortrait) {
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            } else {
+                LinearLayoutManager(requireContext())
+            }
             adapter = categoryAdapter
         }
     }
 
     private fun setupMovies() {
-        movieAdapter = MovieAdapter { movie ->
-            val intent = Intent(requireContext(), MovieDetailActivity::class.java).apply {
-                putExtra(MovieDetailActivity.EXTRA_MOVIE_ID, movie.id)
+        movieAdapter = MovieAdapter(
+            onMovieClick = { movie ->
+                val intent = Intent(requireContext(), MovieDetailActivity::class.java).apply {
+                    putExtra(MovieDetailActivity.EXTRA_MOVIE_ID, movie.id)
+                }
+                startActivity(intent)
+            },
+            onFavoriteClick = { movieId, _ ->
+                viewModel.toggleFavorite(movieId)
+            },
+            isFavorite = { movieId ->
+                viewModel.isFavorite(movieId)
             }
-            startActivity(intent)
-        }
+        )
         binding.rvMovies.apply {
-            layoutManager = GridLayoutManager(requireContext(), 5)
+            val spanCount = (resources.displayMetrics.widthPixels / resources.getDimensionPixelSize(R.dimen.movie_item_width)).coerceAtLeast(2)
+            layoutManager = GridLayoutManager(requireContext(), spanCount)
             adapter = movieAdapter
         }
     }
 
     private fun setupSearch() {
-        binding.etSearchCategories.setOnEditorActionListener { _, _, _ ->
-            viewModel.setCategorySearch(binding.etSearchCategories.text.toString())
+        // Category search only exists in landscape layout
+        binding.etSearchCategories?.setOnEditorActionListener { _, _, _ ->
+            val query = binding.etSearchCategories?.text?.toString() ?: ""
+            viewModel.setCategorySearch(query)
             true
         }
-        binding.etSearchMovies.setOnEditorActionListener { _, _, _ ->
-            viewModel.setMovieSearch(binding.etSearchMovies.text.toString())
+        binding.etSearchMovies?.setOnEditorActionListener { _, _, _ ->
+            val query = binding.etSearchMovies?.text?.toString() ?: ""
+            viewModel.setMovieSearch(query)
             true
         }
     }

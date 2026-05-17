@@ -3,9 +3,9 @@ package com.iptvcoco.app.ui.detail
 import com.iptvcoco.app.IPTVCocoApplication
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.tabs.TabLayout
 import com.iptvcoco.app.R
 import com.iptvcoco.app.adapter.EpisodeAdapter
@@ -41,6 +41,7 @@ class SeriesDetailActivity : AppCompatActivity() {
     }
 
     private fun displaySeries(series: Series) {
+        this.series = series
         binding.tvTitle.text = series.title
         binding.tvRating.text = series.rating.ifBlank { "N/A" }
         binding.tvYear.text = series.year.ifBlank { "" }
@@ -51,7 +52,17 @@ class SeriesDetailActivity : AppCompatActivity() {
             Glide.with(this)
                 .load(series.banner)
                 .placeholder(R.drawable.ic_tv)
+                .error(R.drawable.ic_tv)
+                .transition(DrawableTransitionOptions.withCrossFade(300))
                 .into(binding.ivBanner)
+        } else {
+            binding.ivBanner.setImageResource(R.drawable.ic_tv)
+        }
+
+        updateFavoriteButton()
+        binding.btnFavorite.setOnClickListener {
+            repository.toggleFavoriteSeries(series.id)
+            updateFavoriteButton()
         }
 
         binding.tabSeasons.removeAllTabs()
@@ -90,6 +101,18 @@ class SeriesDetailActivity : AppCompatActivity() {
 
         if (series.seasons.isNotEmpty()) {
             episodeAdapter.submitList(series.seasons[0].episodes)
+        }
+    }
+
+    private fun updateFavoriteButton() {
+        series?.let {
+            val isFav = repository.isFavoriteSeries(it.id)
+            binding.btnFavorite.setImageResource(
+                if (isFav) R.drawable.ic_favorite_filled else R.drawable.ic_favorite
+            )
+            binding.btnFavorite.setColorFilter(
+                if (isFav) getColor(R.color.favorite_active) else getColor(R.color.white)
+            )
         }
     }
 }

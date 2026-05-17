@@ -9,7 +9,8 @@ import com.iptvcoco.app.R
 import com.iptvcoco.app.model.Category
 
 class CategoryAdapter(
-    private val onCategorySelected: (Category) -> Unit
+    private val onCategorySelected: (Category) -> Unit,
+    private val layoutRes: Int = R.layout.item_category
 ) : RecyclerView.Adapter<CategoryAdapter.ViewHolder>() {
 
     private var items = listOf<Category>()
@@ -29,7 +30,7 @@ class CategoryAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_category, parent, false)
+            .inflate(layoutRes, parent, false)
         return ViewHolder(view)
     }
 
@@ -55,11 +56,20 @@ class CategoryAdapter(
         fun bind(category: Category, isSelected: Boolean) {
             name.text = category.name
             itemView.isSelected = isSelected
-            itemView.setBackgroundResource(R.drawable.bg_category_item)
-            if (isSelected) {
-                name.setTextColor(itemView.context.getColor(R.color.white))
+            if (layoutRes == R.layout.item_category_chip) {
+                // Chip style: background is handled by selector, just update text color
+                name.setTextColor(
+                    if (isSelected) itemView.context.getColor(R.color.white)
+                    else itemView.context.getColor(R.color.gray_text)
+                )
             } else {
-                name.setTextColor(itemView.context.getColor(R.color.gray_text))
+                // List style
+                itemView.setBackgroundResource(R.drawable.bg_category_item)
+                if (isSelected) {
+                    name.setTextColor(itemView.context.getColor(R.color.white))
+                } else {
+                    name.setTextColor(itemView.context.getColor(R.color.gray_text))
+                }
             }
         }
     }

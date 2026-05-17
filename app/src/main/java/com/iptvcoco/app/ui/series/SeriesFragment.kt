@@ -1,6 +1,7 @@
 package com.iptvcoco.app.ui.series
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.iptvcoco.app.R
 import com.iptvcoco.app.adapter.CategoryAdapter
 import com.iptvcoco.app.adapter.SeriesAdapter
 import com.iptvcoco.app.databinding.FragmentSeriesBinding
@@ -46,39 +48,60 @@ class SeriesFragment : Fragment() {
 
         viewModel.series.observe(viewLifecycleOwner) {
             seriesAdapter.submitList(it)
+            binding.tvEmpty.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
         }
     }
 
     private fun setupCategories() {
-        categoryAdapter = CategoryAdapter { category ->
-            viewModel.selectCategory(category)
-        }
+        val isPortrait = resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        categoryAdapter = CategoryAdapter(
+            onCategorySelected = { category ->
+                viewModel.selectCategory(category)
+            },
+            layoutRes = if (isPortrait) R.layout.item_category_chip else R.layout.item_category
+        )
         binding.rvCategories.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = if (isPortrait) {
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            } else {
+                LinearLayoutManager(requireContext())
+            }
             adapter = categoryAdapter
         }
     }
 
     private fun setupSeries() {
-        seriesAdapter = SeriesAdapter { series ->
-            val intent = Intent(requireContext(), SeriesDetailActivity::class.java).apply {
-                putExtra(SeriesDetailActivity.EXTRA_SERIES_ID, series.id)
+        seriesAdapter = SeriesAdapter(
+            onSeriesClick = { series ->
+                val intent = Intent(requireContext(), SeriesDetailActivity::class.java).apply {
+                    putExtra(SeriesDetailActivity.EXTRA_SERIES_ID, series.id)
+                }
+                startActivity(intent)
+            },
+            onFavoriteClick = { seriesId, _ ->
+                viewModel.toggleFavorite(seriesId)
+            },
+            isFavorite = { seriesId ->
+                viewModel.isFavorite(seriesId)
             }
-            startActivity(intent)
-        }
+        )
         binding.rvSeries.apply {
-            layoutManager = GridLayoutManager(requireContext(), 5)
+            val spanCount = (resources.displayMetrics.widthPixels / resources.getDimensionPixelSize(R.dimen.movie_item_width)).coerceAtLeast(2)
+            layoutManager = GridLayoutManager(requireContext(), spanCount)
             adapter = seriesAdapter
         }
     }
 
     private fun setupSearch() {
-        binding.etSearchCategories.setOnEditorActionListener { _, _, _ ->
-            viewModel.setCategorySearch(binding.etSearchCategories.text.toString())
+        // Category search only exists in landscape layout
+        binding.etSearchCategories?.setOnEditorActionListener { _, _, _ ->
+            val query = binding.etSearchCategories?.text?.toString() ?: ""
+            viewModel.setCategorySearch(query)
             true
         }
-        binding.etSearchSeries.setOnEditorActionListener { _, _, _ ->
-            viewModel.setSeriesSearch(binding.etSearchSeries.text.toString())
+        binding.etSearchSeries?.setOnEditorActionListener { _, _, _ ->
+            val query = binding.etSearchSeries?.text?.toString() ?: ""
+            viewModel.setSeriesSearch(query)
             true
         }
     }
