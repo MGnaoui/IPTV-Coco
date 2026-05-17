@@ -16,6 +16,7 @@ import com.iptvcoco.app.databinding.FragmentFavoritesBinding
 import com.iptvcoco.app.ui.detail.MovieDetailActivity
 import com.iptvcoco.app.ui.detail.SeriesDetailActivity
 import com.iptvcoco.app.ui.player.PlayerActivity
+import com.iptvcoco.app.R
 import com.iptvcoco.app.viewmodel.FavoritesViewModel
 
 class FavoritesFragment : Fragment() {

@@ -3,6 +3,15 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+
+val keystorePropertiesFile = rootProject.file("local.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.iptvcoco.app"
     compileSdk = 34
@@ -19,9 +28,19 @@ android {
         viewBinding = true
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystoreProperties.getProperty("store.file", "keystore.jks"))
+            storePassword = keystoreProperties.getProperty("store.password")
+            keyAlias = keystoreProperties.getProperty("key.alias")
+            keyPassword = keystoreProperties.getProperty("key.password")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -50,4 +69,5 @@ dependencies {
     implementation("androidx.media3:media3-ui:1.2.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
+    implementation("com.google.code.gson:gson:2.10.1")
 }

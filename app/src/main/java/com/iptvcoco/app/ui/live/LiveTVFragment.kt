@@ -17,6 +17,7 @@ import com.iptvcoco.app.adapter.EpgAdapter
 import com.iptvcoco.app.databinding.FragmentLiveTvBinding
 import com.iptvcoco.app.model.Channel
 import com.iptvcoco.app.ui.player.PlayerActivity
+import com.iptvcoco.app.R
 import com.iptvcoco.app.viewmodel.LiveTVViewModel
 
 class LiveTVFragment : Fragment() {
@@ -74,10 +75,12 @@ class LiveTVFragment : Fragment() {
     }
 
     private fun setupChannels() {
-        channelAdapter = ChannelAdapter { channel ->
-            viewModel.selectChannel(channel)
-            openPlayer(channel)
-        }
+        channelAdapter = ChannelAdapter(
+            onChannelClick = { channel ->
+                viewModel.selectChannel(channel)
+                openPlayer(channel)
+            }
+        )
         binding.rvChannels.apply {
             layoutManager = GridLayoutManager(requireContext(), 3)
             adapter = channelAdapter
