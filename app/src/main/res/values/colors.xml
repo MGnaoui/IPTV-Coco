@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="red_netflix">#E50914</color>
+    <color name="red_netflix_dark">#B20710</color>
+    <color name="dark_background">#141414</color>
+    <color name="dark_surface">#1F1F1F</color>
+    <color name="dark_card">#2A2A2A</color>
+    <color name="gray_text">#B3B3B3</color>
+    <color name="gray_divider">#404040</color>
+    <color name="selected_highlight">#E50914</color>
+    <color name="focused_highlight">#33E50914</color>
+    <color name="transparent">#00000000</color>
+    <color name="semi_transparent_black">#CC000000</color>
+    <color name="control_background">#66000000</color>
+</resources>

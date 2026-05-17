@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/playerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:use_controller="false" />
+
+    <!-- Loading indicator -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/red_netflix" />
+
+    <!-- Controls overlay -->
+    <FrameLayout
+        android:id="@+id/controlsOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_player_controls"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="visible">
+
+        <!-- Top bar: title -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Center controls -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btnSkipBackward"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_skip_backward"
+                android:tint="@color/white"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/btnChannelDown"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="24dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_channel_down"
+                android:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/btnPlayPause"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="14dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_pause"
+                android:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/btnChannelUp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="24dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_channel_up"
+                android:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/btnSkipForward"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_skip_forward"
+                android:tint="@color/white"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Right side: brightness/volume -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="16dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnBrightnessUp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_brightness_up"
+                android:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/btnBrightnessDown"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_brightness_down"
+                android:tint="@color/white" />
+        </LinearLayout>
+
+        <!-- Left side: volume -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="16dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnVolumeUp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_volume_up"
+                android:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/btnVolumeDown"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_volume_down"
+                android:tint="@color/white" />
+        </LinearLayout>
+
+        <!-- Bottom bar: slider + favorite -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="1000"
+                android:progressDrawable="@drawable/bg_progress"
+                android:thumbTint="@color/red_netflix" />
+
+            <ImageButton
+                android:id="@+id/btnFavorite"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="16dp"
+                android:background="@drawable/bg_button_circle"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_favorite"
+                android:tint="@color/white" />
+        </LinearLayout>
+    </FrameLayout>
+
+</FrameLayout>

@@ -1,0 +1,295 @@
+package com.iptvcoco.app.ui.player
+
+import com.iptvcoco.app.IPTVCocoApplication
+import android.content.Context
+import android.media.AudioManager
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import com.iptvcoco.app.R
+import com.iptvcoco.app.databinding.ActivityPlayerBinding
+import com.iptvcoco.app.repository.IPTVRepository
+
+class PlayerActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityPlayerBinding
+    private var player: ExoPlayer? = null
+    private lateinit var repository: IPTVRepository
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var controlsVisible = true
+    private var isLive = true
+    private var contentId: String? = null
+    private var streamUrl: String? = null
+    private var title: String? = null
+
+    private lateinit var audioManager: AudioManager
+    private var maxVolume = 0
+
+    companion object {
+        const val EXTRA_STREAM_URL = "stream_url"
+        const val EXTRA_TITLE = "title"
+        const val EXTRA_TYPE = "type"
+        const val EXTRA_ID = "content_id"
+        const val TYPE_LIVE = "live"
+        const val TYPE_MOVIE = "movie"
+        const val TYPE_SERIES = "series"
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityPlayerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        repository = IPTVCocoApplication.instance.repository
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+
+        streamUrl = intent.getStringExtra(EXTRA_STREAM_URL)
+        title = intent.getStringExtra(EXTRA_TITLE)
+        val type = intent.getStringExtra(EXTRA_TYPE) ?: TYPE_LIVE
+        contentId = intent.getStringExtra(EXTRA_ID)
+        isLive = type == TYPE_LIVE
+
+        binding.tvTitle.text = title
+
+        setupUI()
+        initializePlayer()
+        setupControls()
+        setupTouchHandling()
+        resetControlsTimer()
+    }
+
+    private fun setupUI() {
+        if (isLive) {
+            binding.btnSkipForward.visibility = View.GONE
+            binding.btnSkipBackward.visibility = View.GONE
+            binding.btnChannelUp.visibility = View.VISIBLE
+            binding.btnChannelDown.visibility = View.VISIBLE
+        } else {
+            binding.btnSkipForward.visibility = View.VISIBLE
+            binding.btnSkipBackward.visibility = View.VISIBLE
+            binding.btnChannelUp.visibility = View.GONE
+            binding.btnChannelDown.visibility = View.GONE
+        }
+    }
+
+    private fun initializePlayer() {
+        player = ExoPlayer.Builder(this).build().apply {
+            binding.playerView.player = this
+            streamUrl?.let { url ->
+                setMediaItem(MediaItem.fromUri(url))
+                prepare()
+                play()
+
+                contentId?.let { id ->
+                    val resumePos = repository.getResumePosition(id)
+                    if (resumePos > 0 && !isLive) {
+                        seekTo(resumePos)
+                    }
+                }
+            }
+            addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    binding.progressBar.visibility =
+                        if (playbackState == Player.STATE_BUFFERING) View.VISIBLE else View.GONE
+                }
+            })
+        }
+    }
+
+    private fun setupControls() {
+        binding.btnPlayPause.setOnClickListener {
+            player?.let {
+                if (it.isPlaying) {
+                    it.pause()
+                    binding.btnPlayPause.setImageResource(R.drawable.ic_play)
+                } else {
+                    it.play()
+                    binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
+                }
+            }
+            resetControlsTimer()
+        }
+
+        binding.btnChannelUp.setOnClickListener {
+            // Navigate to next channel in Live TV context
+            resetControlsTimer()
+        }
+
+        binding.btnChannelDown.setOnClickListener {
+            // Navigate to previous channel in Live TV context
+            resetControlsTimer()
+        }
+
+        binding.btnSkipForward.setOnClickListener {
+            player?.let {
+                it.seekTo(it.currentPosition + 30000)
+            }
+            resetControlsTimer()
+        }
+
+        binding.btnSkipBackward.setOnClickListener {
+            player?.let {
+                it.seekTo((it.currentPosition - 30000).coerceAtLeast(0))
+            }
+            resetControlsTimer()
+        }
+
+        binding.btnVolumeUp.setOnClickListener {
+            audioManager.adjustStreamVolume(
+                AudioManager.STREAM_MUSIC,
+                AudioManager.ADJUST_RAISE,
+                AudioManager.FLAG_SHOW_UI
+            )
+            resetControlsTimer()
+        }
+
+        binding.btnVolumeDown.setOnClickListener {
+            audioManager.adjustStreamVolume(
+                AudioManager.STREAM_MUSIC,
+                AudioManager.ADJUST_LOWER,
+                AudioManager.FLAG_SHOW_UI
+            )
+            resetControlsTimer()
+        }
+
+        binding.btnBrightnessUp.setOnClickListener {
+            adjustBrightness(0.1f)
+            resetControlsTimer()
+        }
+
+        binding.btnBrightnessDown.setOnClickListener {
+            adjustBrightness(-0.1f)
+            resetControlsTimer()
+        }
+
+        binding.btnFavorite.setOnClickListener {
+            contentId?.let { id ->
+                if (isLive) repository.toggleFavoriteChannel(id)
+            }
+            resetControlsTimer()
+        }
+
+        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser && !isLive) {
+                    player?.let {
+                        val duration = it.duration
+                        if (duration > 0) {
+                            it.seekTo(duration * progress / 1000)
+                        }
+                    }
+                }
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        updateSeekBar()
+    }
+
+    private fun setupTouchHandling() {
+        val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                toggleControls()
+                return true
+            }
+        })
+
+        binding.controlsOverlay.setOnClickListener {
+            toggleControls()
+        }
+
+        binding.playerView.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            true
+        }
+    }
+
+    private fun toggleControls() {
+        if (controlsVisible) {
+            hideControls()
+        } else {
+            showControls()
+        }
+    }
+
+    private fun showControls() {
+        binding.controlsOverlay.visibility = View.VISIBLE
+        controlsVisible = true
+        resetControlsTimer()
+    }
+
+    private fun hideControls() {
+        binding.controlsOverlay.visibility = View.GONE
+        controlsVisible = false
+        handler.removeCallbacks(hideControlsRunnable)
+    }
+
+    private val hideControlsRunnable = Runnable {
+        hideControls()
+    }
+
+    private fun resetControlsTimer() {
+        handler.removeCallbacks(hideControlsRunnable)
+        handler.postDelayed(hideControlsRunnable, 5000)
+    }
+
+    private fun updateSeekBar() {
+        handler.postDelayed(object : Runnable {
+            override fun run() {
+                player?.let {
+                    if (!isLive && it.duration > 0) {
+                        val progress = (it.currentPosition * 1000 / it.duration).toInt()
+                        binding.seekBar.progress = progress
+                    }
+                }
+                handler.postDelayed(this, 1000)
+            }
+        }, 1000)
+    }
+
+    private fun adjustBrightness(delta: Float) {
+        val layoutParams = window.attributes
+        var brightness = layoutParams.screenBrightness
+        if (brightness < 0) brightness = 0.5f
+        brightness += delta
+        brightness = brightness.coerceIn(0.1f, 1.0f)
+        layoutParams.screenBrightness = brightness
+        window.attributes = layoutParams
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (!isLive) {
+            player?.currentPosition?.let { pos ->
+                contentId?.let { id ->
+                    repository.saveResumePosition(id, pos)
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacksAndMessages(null)
+        player?.release()
+        player = null
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finish()
+    }
+}
