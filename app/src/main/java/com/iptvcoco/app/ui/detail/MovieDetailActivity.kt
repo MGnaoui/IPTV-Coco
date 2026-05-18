@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.iptvcoco.app.R
 import com.iptvcoco.app.databinding.ActivityMovieDetailBinding
@@ -49,9 +50,11 @@ class MovieDetailActivity : AppCompatActivity() {
         if (!movie.banner.isNullOrBlank()) {
             Glide.with(this)
                 .load(movie.banner)
+                .thumbnail(0.1f)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.ic_movie)
                 .error(R.drawable.ic_movie)
-                .transition(DrawableTransitionOptions.withCrossFade(300))
+                .transition(DrawableTransitionOptions.withCrossFade(200))
                 .into(binding.ivBanner)
         } else {
             binding.ivBanner.setImageResource(R.drawable.ic_movie)

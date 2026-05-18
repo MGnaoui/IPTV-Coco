@@ -1,9 +1,12 @@
 package com.iptvcoco.app.ui.main
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.iptvcoco.app.IPTVCocoApplication
 import com.iptvcoco.app.R
@@ -14,6 +17,7 @@ import com.iptvcoco.app.ui.live.LiveTVFragment
 import com.iptvcoco.app.ui.login.LoginActivity
 import com.iptvcoco.app.ui.movies.MoviesFragment
 import com.iptvcoco.app.ui.series.SeriesFragment
+import com.iptvcoco.app.util.AppLogger
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -23,13 +27,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var repository: IPTVRepository
+    private var currentNavItemId: Int = R.id.nav_live
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        repository = IPTVCocoApplication.instance.repository
+        repository = (application as IPTVCocoApplication).repository
         if (repository.isLoggedIn() && repository.getCategories(com.iptvcoco.app.model.ContentType.LIVE).isEmpty()) {
             lifecycleScope.launch {
                 repository.reload()
@@ -37,30 +42,95 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, LiveTVFragment())
-                .commit()
+            switchTab(R.id.nav_live)
+        } else {
+            currentNavItemId = savedInstanceState.getInt("currentNavItemId", R.id.nav_live)
+            // Ensure only the current fragment is visible
+            val transaction = supportFragmentManager.beginTransaction()
+            listOf(R.id.nav_live, R.id.nav_movies, R.id.nav_series, R.id.nav_favorites).forEach { id ->
+                supportFragmentManager.findFragmentByTag(tagFor(id))?.let { fragment ->
+                    if (id == currentNavItemId) transaction.show(fragment) else transaction.hide(fragment)
+                }
+            }
+            transaction.commit()
         }
 
         binding.bottomNav.setOnItemSelectedListener { item ->
-            val fragment = when (item.itemId) {
-                R.id.nav_live -> LiveTVFragment()
-                R.id.nav_movies -> MoviesFragment()
-                R.id.nav_series -> SeriesFragment()
-                R.id.nav_favorites -> FavoritesFragment()
-                else -> null
-            }
-            fragment?.let {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, it)
-                    .commit()
-                true
-            } ?: false
+            switchTab(item.itemId)
+            true
         }
 
         binding.btnSettings.setOnClickListener {
             showUserMenuDialog()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("currentNavItemId", currentNavItemId)
+    }
+
+    private fun switchTab(itemId: Int) {
+        if (itemId == currentNavItemId) return
+
+        val transaction = supportFragmentManager.beginTransaction()
+
+        // Hide current fragment
+        supportFragmentManager.findFragmentByTag(tagFor(currentNavItemId))?.let {
+            transaction.hide(it)
+        }
+
+        // Show or add new fragment
+        val tag = tagFor(itemId)
+        var fragment = supportFragmentManager.findFragmentByTag(tag)
+        if (fragment == null) {
+            fragment = createFragment(itemId)
+            transaction.add(R.id.container, fragment, tag)
+        }
+        transaction.show(fragment)
+        transaction.commit()
+
+        currentNavItemId = itemId
+    }
+
+    private fun createFragment(itemId: Int): Fragment {
+        return when (itemId) {
+            R.id.nav_live -> LiveTVFragment()
+            R.id.nav_movies -> MoviesFragment()
+            R.id.nav_series -> SeriesFragment()
+            R.id.nav_favorites -> FavoritesFragment()
+            else -> throw IllegalArgumentException("Unknown tab: $itemId")
+        }
+    }
+
+    private fun tagFor(itemId: Int): String = "tab_$itemId"
+
+    private fun shareLogs() {
+        val logFile = AppLogger.getLogFile()
+        if (logFile == null || !logFile.exists()) {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.user_menu)
+                .setMessage("No logs available yet.")
+                .setPositiveButton(R.string.close, null)
+                .show()
+            return
+        }
+
+        val uri: Uri = FileProvider.getUriForFile(
+            this,
+            "${packageName}.fileprovider",
+            logFile
+        )
+
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            putExtra(Intent.EXTRA_SUBJECT, "IPTV Coco Logs")
+            putExtra(Intent.EXTRA_TEXT, "Please find the attached log file.")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        startActivity(Intent.createChooser(shareIntent, "Share Logs"))
     }
 
     private fun showUserMenuDialog() {
@@ -106,7 +176,9 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
             }
-            .setNeutralButton(R.string.close, null)
+            .setNeutralButton(R.string.share_logs) { _, _ ->
+                shareLogs()
+            }
             .show()
     }
 }

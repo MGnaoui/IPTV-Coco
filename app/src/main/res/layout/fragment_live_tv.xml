@@ -5,12 +5,11 @@
     android:layout_height="match_parent"
     android:background="@color/dark_background">
 
-    <!-- Row 1: Categories -->
+    <!-- Left: Categories (horizontal strip) -->
     <LinearLayout
         android:id="@+id/rowCategories"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="8dp"
         app:layout_constraintBottom_toTopOf="@id/rowChannels"
@@ -28,17 +27,15 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvCategories"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
     </LinearLayout>
 
-    <!-- Row 2: Channels -->
+    <!-- Left: Channels grid -->
     <LinearLayout
         android:id="@+id/rowChannels"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
         android:orientation="vertical"
         android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -81,9 +78,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.45" />
+        app:layout_constraintGuide_percent="0.50" />
 
-    <!-- Row 3: Preview + EPG -->
+    <!-- Right: Preview + EPG -->
     <LinearLayout
         android:id="@+id/rowPreview"
         android:layout_width="0dp"

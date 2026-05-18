@@ -1,16 +1,16 @@
 package com.iptvcoco.app.viewmodel
 
-import com.iptvcoco.app.IPTVCocoApplication
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.iptvcoco.app.IPTVCocoApplication
 import com.iptvcoco.app.model.Category
 import com.iptvcoco.app.model.Channel
 import com.iptvcoco.app.model.ContentType
 
 class LiveTVViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = IPTVCocoApplication.instance.repository
+    private val repository = (application as IPTVCocoApplication).repository
 
     private val _categories = MutableLiveData<List<Category>>()
     val categories: LiveData<List<Category>> = _categories
@@ -36,9 +36,11 @@ class LiveTVViewModel(application: Application) : AndroidViewModel(application) 
 
     fun loadCategories() {
         val all = repository.getCategories(ContentType.LIVE)
-        _categories.value = all
-        if (all.isNotEmpty() && _selectedCategory.value == null) {
-            selectCategory(all.first())
+        val categories = listOf(Category("favorites", "Favorites", ContentType.LIVE)) + all
+        _categories.value = categories
+        if (categories.isNotEmpty() && _selectedCategory.value == null) {
+            // Select first real category by default, not Favorites
+            selectCategory(if (all.isNotEmpty()) all.first() else categories.first())
         }
     }
 
@@ -50,10 +52,13 @@ class LiveTVViewModel(application: Application) : AndroidViewModel(application) 
     fun loadChannels() {
         val cat = _selectedCategory.value
         val query = _searchQueryChannels.value ?: ""
-        _channels.value = if (query.isBlank()) {
-            repository.getChannels(cat?.id)
-        } else {
-            repository.searchChannels(query, cat?.id)
+        _channels.value = when {
+            cat?.id == "favorites" -> {
+                val favs = repository.getFavoriteChannels()
+                if (query.isBlank()) favs else favs.filter { it.name.contains(query, ignoreCase = true) }
+            }
+            query.isBlank() -> repository.getChannels(cat?.id)
+            else -> repository.searchChannels(query, cat?.id)
         }
     }
 
@@ -64,7 +69,8 @@ class LiveTVViewModel(application: Application) : AndroidViewModel(application) 
     fun setCategorySearch(query: String) {
         _searchQueryCategories.value = query
         val all = repository.getCategories(ContentType.LIVE)
-        _categories.value = if (query.isBlank()) all else all.filter {
+        val categories = listOf(Category("favorites", "Favorites", ContentType.LIVE)) + all
+        _categories.value = if (query.isBlank()) categories else categories.filter {
             it.name.contains(query, ignoreCase = true)
         }
     }

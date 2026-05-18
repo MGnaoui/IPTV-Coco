@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.iptvcoco.app.R
 import com.iptvcoco.app.model.Series
@@ -64,9 +65,11 @@ class SeriesAdapter(
             if (!series.poster.isNullOrBlank()) {
                 Glide.with(poster.context)
                     .load(series.poster)
+                    .thumbnail(0.1f)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .placeholder(R.drawable.ic_tv)
                     .error(R.drawable.ic_tv)
-                    .transition(DrawableTransitionOptions.withCrossFade(300))
+                    .transition(DrawableTransitionOptions.withCrossFade(200))
                     .into(poster)
             } else {
                 poster.setImageResource(R.drawable.ic_tv)

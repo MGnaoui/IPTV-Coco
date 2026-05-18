@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.iptvcoco.app.R
 import com.iptvcoco.app.model.Channel
@@ -65,9 +66,11 @@ class ChannelAdapter(
             if (!channel.logo.isNullOrBlank()) {
                 Glide.with(logo.context)
                     .load(channel.logo)
+                    .thumbnail(0.1f)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .placeholder(R.drawable.ic_live)
                     .error(R.drawable.ic_live)
-                    .transition(DrawableTransitionOptions.withCrossFade(300))
+                    .transition(DrawableTransitionOptions.withCrossFade(200))
                     .into(logo)
             } else {
                 logo.setImageResource(R.drawable.ic_live)

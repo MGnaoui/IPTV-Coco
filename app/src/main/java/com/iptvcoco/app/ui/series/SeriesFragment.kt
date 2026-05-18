@@ -3,6 +3,10 @@ package com.iptvcoco.app.ui.series
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +29,8 @@ class SeriesFragment : Fragment() {
 
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var seriesAdapter: SeriesAdapter
+    private val searchHandler = Handler(Looper.getMainLooper())
+    private var seriesSearchRunnable: Runnable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,6 +73,7 @@ class SeriesFragment : Fragment() {
                 LinearLayoutManager(requireContext())
             }
             adapter = categoryAdapter
+            setHasFixedSize(true)
         }
     }
 
@@ -86,9 +93,18 @@ class SeriesFragment : Fragment() {
             }
         )
         binding.rvSeries.apply {
-            val spanCount = (resources.displayMetrics.widthPixels / resources.getDimensionPixelSize(R.dimen.movie_item_width)).coerceAtLeast(2)
-            layoutManager = GridLayoutManager(requireContext(), spanCount)
+            layoutManager = GridLayoutManager(requireContext(), 3)
             adapter = seriesAdapter
+            setHasFixedSize(true)
+            setItemViewCacheSize(20)
+            post {
+                if (width > 0) {
+                    val itemWidth = resources.getDimensionPixelSize(R.dimen.movie_item_width) +
+                            resources.getDimensionPixelSize(R.dimen.margin_small) * 2
+                    val spanCount = (width / itemWidth).coerceAtLeast(2)
+                    (layoutManager as GridLayoutManager).spanCount = spanCount
+                }
+            }
         }
     }
 
@@ -99,15 +115,27 @@ class SeriesFragment : Fragment() {
             viewModel.setCategorySearch(query)
             true
         }
-        binding.etSearchSeries?.setOnEditorActionListener { _, _, _ ->
-            val query = binding.etSearchSeries?.text?.toString() ?: ""
-            viewModel.setSeriesSearch(query)
+
+        binding.etSearchSeries.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                seriesSearchRunnable?.let { searchHandler.removeCallbacks(it) }
+                seriesSearchRunnable = Runnable {
+                    viewModel.setSeriesSearch(s?.toString() ?: "")
+                }.also { searchHandler.postDelayed(it, 400) }
+            }
+        })
+        binding.etSearchSeries.setOnEditorActionListener { _, _, _ ->
+            seriesSearchRunnable?.let { searchHandler.removeCallbacks(it) }
+            viewModel.setSeriesSearch(binding.etSearchSeries.text.toString())
             true
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        seriesSearchRunnable?.let { searchHandler.removeCallbacks(it) }
         _binding = null
     }
 }

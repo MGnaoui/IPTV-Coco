@@ -1,16 +1,16 @@
 package com.iptvcoco.app.viewmodel
 
-import com.iptvcoco.app.IPTVCocoApplication
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.iptvcoco.app.IPTVCocoApplication
 import com.iptvcoco.app.model.Category
 import com.iptvcoco.app.model.ContentType
 import com.iptvcoco.app.model.Series
 
 class SeriesViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = IPTVCocoApplication.instance.repository
+    private val repository = (application as IPTVCocoApplication).repository
 
     private val _categories = MutableLiveData<List<Category>>()
     val categories: LiveData<List<Category>> = _categories
@@ -30,9 +30,10 @@ class SeriesViewModel(application: Application) : AndroidViewModel(application) 
 
     fun loadCategories() {
         val all = repository.getCategories(ContentType.SERIES)
-        _categories.value = all
-        if (all.isNotEmpty() && _selectedCategory.value == null) {
-            selectCategory(all.first())
+        val categories = listOf(Category("all", "All", ContentType.SERIES)) + all
+        _categories.value = categories
+        if (categories.isNotEmpty() && _selectedCategory.value == null) {
+            selectCategory(categories.first())
         }
     }
 
@@ -44,17 +45,19 @@ class SeriesViewModel(application: Application) : AndroidViewModel(application) 
     fun loadSeries() {
         val cat = _selectedCategory.value
         val query = _searchQuerySeries.value ?: ""
+        val categoryId = if (cat?.id == "all") null else cat?.id
         _series.value = if (query.isBlank()) {
-            repository.getSeries(cat?.id)
+            repository.getSeries(categoryId)
         } else {
-            repository.searchSeries(query, cat?.id)
+            repository.searchSeries(query, categoryId)
         }
     }
 
     fun setCategorySearch(query: String) {
         _searchQueryCategories.value = query
         val all = repository.getCategories(ContentType.SERIES)
-        _categories.value = if (query.isBlank()) all else all.filter {
+        val categories = listOf(Category("all", "All", ContentType.SERIES)) + all
+        _categories.value = if (query.isBlank()) categories else categories.filter {
             it.name.contains(query, ignoreCase = true)
         }
     }

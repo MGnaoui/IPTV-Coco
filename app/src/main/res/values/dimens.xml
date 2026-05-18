@@ -4,6 +4,8 @@
     <dimen name="category_item_height">90dp</dimen>
     <dimen name="channel_item_width">200dp</dimen>
     <dimen name="channel_item_height">120dp</dimen>
+    <dimen name="channel_item_width_compact">110dp</dimen>
+    <dimen name="channel_item_height_compact">100dp</dimen>
     <dimen name="movie_item_width">120dp</dimen>
     <dimen name="movie_item_height">180dp</dimen>
     <dimen name="poster_corner_radius">10dp</dimen>

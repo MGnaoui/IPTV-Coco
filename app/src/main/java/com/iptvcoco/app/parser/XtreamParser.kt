@@ -3,27 +3,31 @@ package com.iptvcoco.app.parser
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
+import com.google.gson.stream.JsonReader
 import com.iptvcoco.app.model.Category
 import com.iptvcoco.app.model.Channel
 import com.iptvcoco.app.model.ContentType
 import com.iptvcoco.app.model.Episode
-import com.iptvcoco.app.model.Movie
 import com.iptvcoco.app.model.Season
+import com.iptvcoco.app.model.Movie
 import com.iptvcoco.app.model.Series
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 
 object XtreamParser {
 
     private val gson = Gson()
 
     fun parseXtreamPlaylist(baseUrl: String, username: String, password: String): M3UParser.ParsedPlaylist {
-        val liveCats = fetchLiveCategories(baseUrl, username, password)
-        val liveStreams = fetchLiveStreams(baseUrl, username, password)
-        val vodCats = fetchVodCategories(baseUrl, username, password)
-        val vodStreams = fetchVodStreams(baseUrl, username, password)
-        val seriesCats = fetchSeriesCategories(baseUrl, username, password)
-        val seriesList = fetchSeries(baseUrl, username, password)
+        val encUser = URLEncoder.encode(username, "UTF-8")
+        val encPass = URLEncoder.encode(password, "UTF-8")
+        val liveCats = fetchLiveCategories(baseUrl, encUser, encPass)
+        val liveStreams = fetchLiveStreams(baseUrl, encUser, encPass)
+        val vodCats = fetchVodCategories(baseUrl, encUser, encPass)
+        val vodStreams = fetchVodStreams(baseUrl, encUser, encPass)
+        val seriesCats = fetchSeriesCategories(baseUrl, encUser, encPass)
+        val seriesList = fetchSeries(baseUrl, encUser, encPass)
 
         // Build category lookup maps
         val liveCatMap = liveCats.associateBy { it.id }
@@ -65,7 +69,7 @@ object XtreamParser {
             )
         }
 
-        // Map series
+        // Map series (episodes fetched lazily via get_series_info)
         val series = seriesList.mapIndexed { index, s ->
             val catId = s.category_id ?: "0"
             val catName = seriesCatMap[catId]?.name ?: "General"
@@ -80,18 +84,83 @@ object XtreamParser {
                 plot = s.plot ?: "",
                 cast = "",
                 year = s.year ?: "",
-                seasons = emptyList() // Episodes fetched lazily or via separate call
+                seasons = emptyList() // Episodes fetched lazily via get_series_info
             )
         }
 
         return M3UParser.ParsedPlaylist(
-            liveCategories = liveCats.map { Category("live_${it.id.hashCode()}", it.name ?: "General", ContentType.LIVE) },
-            movieCategories = vodCats.map { Category("movie_${it.id.hashCode()}", it.name ?: "General", ContentType.MOVIE) },
-            seriesCategories = seriesCats.map { Category("series_${it.id.hashCode()}", it.name ?: "General", ContentType.SERIES) },
+            liveCategories = liveCats.map { Category("live_${it.id.hashCode()}", it.name, ContentType.LIVE) },
+            movieCategories = vodCats.map { Category("movie_${it.id.hashCode()}", it.name, ContentType.MOVIE) },
+            seriesCategories = seriesCats.map { Category("series_${it.id.hashCode()}", it.name, ContentType.SERIES) },
             channels = channels,
             movies = movies,
             series = series
         )
+    }
+
+    fun fetchSeriesInfo(baseUrl: String, username: String, password: String, seriesId: String): List<Season> {
+        val encUser = URLEncoder.encode(username, "UTF-8")
+        val encPass = URLEncoder.encode(password, "UTF-8")
+        val urlStr = "$baseUrl/player_api.php?username=$encUser&password=$encPass&action=get_series_info&series_id=$seriesId"
+        val url = URL(urlStr)
+        val connection = url.openConnection() as HttpURLConnection
+        connection.connectTimeout = 15000
+        connection.readTimeout = 30000
+        connection.requestMethod = "GET"
+        connection.setRequestProperty("User-Agent", "IPTVCoco/1.0")
+        connection.instanceFollowRedirects = true
+        return try {
+            val responseCode = connection.responseCode
+            if (responseCode !in 200..299) {
+                throw Exception("HTTP $responseCode for $urlStr")
+            }
+            val content = connection.inputStream.bufferedReader().use { it.readText() }
+            val json = gson.fromJson(content, JsonObject::class.java)
+            parseSeriesInfoJson(json, baseUrl, username, password)
+        } finally {
+            try { connection.disconnect() } catch (_: Exception) { }
+        }
+    }
+
+    private fun parseSeriesInfoJson(json: JsonObject, baseUrl: String, username: String, password: String): List<Season> {
+        val episodesObj = json.getAsJsonObject("episodes") ?: return emptyList()
+        val seasons = mutableListOf<Season>()
+
+        episodesObj.entrySet().forEach { entry ->
+            val seasonNum = entry.key.toIntOrNull() ?: return@forEach
+            val episodes = mutableListOf<Episode>()
+
+            entry.value.asJsonArray.forEach episodeLoop@{ epElement ->
+                try {
+                    val ep = gson.fromJson(epElement, XtreamEpisodeInfo::class.java)
+                    val epId = ep.id ?: return@episodeLoop
+                    val epNum = ep.episode_num?.toIntOrNull() ?: 0
+                    val title = ep.title?.takeIf { it.isNotBlank() } ?: "Episode $epNum"
+                    val ext = ep.container_extension ?: "mp4"
+                    val streamUrl = "$baseUrl/series/$username/$password/$epId.$ext"
+
+                    episodes.add(Episode(
+                        id = "ep_$epId",
+                        title = title,
+                        number = epNum,
+                        streamUrl = streamUrl,
+                        runtime = ep.info?.duration ?: "",
+                        plot = ep.info?.plot ?: ""
+                    ))
+                } catch (_: Exception) {
+                    // Skip malformed episode
+                }
+            }
+
+            if (episodes.isNotEmpty()) {
+                seasons.add(Season(
+                    number = seasonNum,
+                    episodes = episodes.sortedBy { it.number }
+                ))
+            }
+        }
+
+        return seasons.sortedBy { it.number }
     }
 
     private inline fun <reified T> fetchJsonList(urlStr: String): List<T> {
@@ -107,11 +176,39 @@ object XtreamParser {
             if (responseCode !in 200..299) {
                 throw Exception("HTTP $responseCode for $urlStr")
             }
-            val content = connection.inputStream.bufferedReader().use { it.readText() }
-            val type = object : TypeToken<List<T>>() {}.type
-            gson.fromJson(content, type) ?: emptyList()
+            val contentLength = connection.getHeaderField("Content-Length")?.toLongOrNull() ?: -1L
+            if (contentLength > 50 * 1024 * 1024) {
+                throw Exception("Response too large (${contentLength} bytes) for $urlStr")
+            }
+
+            val itemType = object : TypeToken<T>() {}.type
+            val list = mutableListOf<T>()
+            val maxItems = 100000 // Increased cap; streaming parser keeps memory low
+
+            JsonReader(connection.inputStream.bufferedReader()).use { reader ->
+                reader.beginArray()
+                var count = 0
+                while (reader.hasNext() && count < maxItems) {
+                    try {
+                        val item: T? = gson.fromJson(reader, itemType)
+                        if (item != null) {
+                            list.add(item)
+                            count++
+                        }
+                    } catch (_: Exception) {
+                        // Skip malformed individual item
+                        try { reader.skipValue() } catch (_: Exception) { }
+                    }
+                }
+                // Skip any remaining items to properly close the array
+                while (reader.hasNext()) {
+                    try { reader.skipValue() } catch (_: Exception) { break }
+                }
+                reader.endArray()
+            }
+            list
         } finally {
-            connection.disconnect()
+            try { connection.disconnect() } catch (_: Exception) { }
         }
     }
 
@@ -195,5 +292,18 @@ object XtreamParser {
         val rating: String? = null,
         val rating_5based: Double? = null,
         val year: String? = null
+    )
+
+    private data class XtreamEpisodeInfo(
+        val id: String? = null,
+        val episode_num: String? = null,
+        val title: String? = null,
+        val container_extension: String? = null,
+        val info: XtreamEpisodeInfoDetail? = null
+    )
+
+    private data class XtreamEpisodeInfoDetail(
+        val duration: String? = null,
+        val plot: String? = null
     )
 }

@@ -1,23 +1,30 @@
 package com.iptvcoco.app.ui.detail
 
-import com.iptvcoco.app.IPTVCocoApplication
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.tabs.TabLayout
+import com.iptvcoco.app.IPTVCocoApplication
 import com.iptvcoco.app.R
 import com.iptvcoco.app.adapter.EpisodeAdapter
 import com.iptvcoco.app.databinding.ActivitySeriesDetailBinding
+import com.iptvcoco.app.model.Season
 import com.iptvcoco.app.model.Series
-import com.iptvcoco.app.repository.IPTVRepository
 import com.iptvcoco.app.ui.player.PlayerActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SeriesDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySeriesDetailBinding
-    private lateinit var repository: IPTVRepository
+    private val repository = IPTVCocoApplication.instance.repository
     private var seriesId: String? = null
     private var series: Series? = null
     private lateinit var episodeAdapter: EpisodeAdapter
@@ -31,17 +38,31 @@ class SeriesDetailActivity : AppCompatActivity() {
         binding = ActivitySeriesDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        repository = IPTVCocoApplication.instance.repository
         seriesId = intent.getStringExtra(EXTRA_SERIES_ID)
 
+        // Show basic info instantly from cached data
         seriesId?.let { id ->
-            series = repository.getSeriesById(id)
-            series?.let { displaySeries(it) }
+            val cachedSeries = repository.getSeriesById(id)
+            cachedSeries?.let {
+                series = it
+                displaySeriesInfo(it)
+            }
+
+            // Fetch episodes in background (Xtream on-demand)
+            lifecycleScope.launch {
+                val loadedSeries = withContext(Dispatchers.IO) {
+                    repository.getSeriesInfo(id)
+                }
+                loadedSeries?.let {
+                    series = it
+                    displayEpisodes(it.seasons)
+                }
+            }
         }
     }
 
-    private fun displaySeries(series: Series) {
-        this.series = series
+    /** Display basic series info immediately without waiting for network */
+    private fun displaySeriesInfo(series: Series) {
         binding.tvTitle.text = series.title
         binding.tvRating.text = series.rating.ifBlank { "N/A" }
         binding.tvYear.text = series.year.ifBlank { "" }
@@ -51,9 +72,11 @@ class SeriesDetailActivity : AppCompatActivity() {
         if (!series.banner.isNullOrBlank()) {
             Glide.with(this)
                 .load(series.banner)
+                .thumbnail(0.1f)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.ic_tv)
                 .error(R.drawable.ic_tv)
-                .transition(DrawableTransitionOptions.withCrossFade(300))
+                .transition(DrawableTransitionOptions.withCrossFade(200))
                 .into(binding.ivBanner)
         } else {
             binding.ivBanner.setImageResource(R.drawable.ic_tv)
@@ -65,12 +88,12 @@ class SeriesDetailActivity : AppCompatActivity() {
             updateFavoriteButton()
         }
 
-        binding.tabSeasons.removeAllTabs()
-        series.seasons.forEach { season ->
-            binding.tabSeasons.addTab(
-                binding.tabSeasons.newTab().setText("S${season.number}")
-            )
-        }
+        // Setup episode adapter even if empty; will be updated when data arrives
+        setupEpisodeAdapter(series)
+    }
+
+    private fun setupEpisodeAdapter(series: Series) {
+        if (::episodeAdapter.isInitialized) return
 
         episodeAdapter = EpisodeAdapter { episode ->
             val intent = Intent(this, PlayerActivity::class.java).apply {
@@ -82,14 +105,38 @@ class SeriesDetailActivity : AppCompatActivity() {
             startActivity(intent)
         }
         binding.rvEpisodes.apply {
-            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this@SeriesDetailActivity)
+            layoutManager = LinearLayoutManager(this@SeriesDetailActivity)
             adapter = episodeAdapter
+            setHasFixedSize(true)
+            setItemViewCacheSize(20)
+        }
+    }
+
+    /** Update episodes when background fetch completes */
+    private fun displayEpisodes(seasons: List<Season>) {
+        series?.let { s ->
+            setupEpisodeAdapter(s)
         }
 
+        binding.tabSeasons.removeAllTabs()
+        if (seasons.isEmpty()) {
+            binding.tabSeasons.visibility = View.GONE
+            episodeAdapter.submitList(emptyList())
+            return
+        }
+
+        binding.tabSeasons.visibility = View.VISIBLE
+        seasons.forEach { season ->
+            binding.tabSeasons.addTab(
+                binding.tabSeasons.newTab().setText("S${season.number}")
+            )
+        }
+
+        binding.tabSeasons.clearOnTabSelectedListeners()
         binding.tabSeasons.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 tab?.let {
-                    val season = series.seasons.getOrNull(it.position)
+                    val season = seasons.getOrNull(it.position)
                     season?.let { s ->
                         episodeAdapter.submitList(s.episodes)
                     }
@@ -99,9 +146,8 @@ class SeriesDetailActivity : AppCompatActivity() {
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
 
-        if (series.seasons.isNotEmpty()) {
-            episodeAdapter.submitList(series.seasons[0].episodes)
-        }
+        // Show first season by default
+        episodeAdapter.submitList(seasons[0].episodes)
     }
 
     private fun updateFavoriteButton() {

@@ -2,6 +2,10 @@ package com.iptvcoco.app.ui.live
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +14,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.iptvcoco.app.adapter.CategoryAdapter
 import com.iptvcoco.app.adapter.ChannelAdapter
@@ -29,6 +34,9 @@ class LiveTVFragment : Fragment() {
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var channelAdapter: ChannelAdapter
     private lateinit var epgAdapter: EpgAdapter
+    private val searchHandler = Handler(Looper.getMainLooper())
+    private var categorySearchRunnable: Runnable? = null
+    private var channelSearchRunnable: Runnable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,11 +77,13 @@ class LiveTVFragment : Fragment() {
         categoryAdapter = CategoryAdapter(
             onCategorySelected = { category ->
                 viewModel.selectCategory(category)
-            }
+            },
+            layoutRes = R.layout.item_category_chip
         )
         binding.rvCategories.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = categoryAdapter
+            setHasFixedSize(true)
         }
     }
 
@@ -91,8 +101,18 @@ class LiveTVFragment : Fragment() {
             }
         )
         binding.rvChannels.apply {
-            layoutManager = GridLayoutManager(requireContext(), 3)
+            layoutManager = GridLayoutManager(requireContext(), 4)
             adapter = channelAdapter
+            setHasFixedSize(true)
+            setItemViewCacheSize(24)
+            post {
+                if (width > 0) {
+                    val itemWidth = resources.getDimensionPixelSize(R.dimen.channel_item_width_compact) +
+                            resources.getDimensionPixelSize(R.dimen.margin_small) * 2
+                    val spanCount = (width / itemWidth).coerceAtLeast(4)
+                    (layoutManager as GridLayoutManager).spanCount = spanCount
+                }
+            }
         }
     }
 
@@ -101,6 +121,7 @@ class LiveTVFragment : Fragment() {
         binding.rvEpg.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = epgAdapter
+            setHasFixedSize(true)
         }
     }
 
@@ -113,11 +134,34 @@ class LiveTVFragment : Fragment() {
     }
 
     private fun setupSearch() {
+        binding.etSearchCategories.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                categorySearchRunnable?.let { searchHandler.removeCallbacks(it) }
+                categorySearchRunnable = Runnable {
+                    viewModel.setCategorySearch(s?.toString() ?: "")
+                }.also { searchHandler.postDelayed(it, 400) }
+            }
+        })
         binding.etSearchCategories.setOnEditorActionListener { _, _, _ ->
+            categorySearchRunnable?.let { searchHandler.removeCallbacks(it) }
             viewModel.setCategorySearch(binding.etSearchCategories.text.toString())
             true
         }
+
+        binding.etSearchChannels.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                channelSearchRunnable?.let { searchHandler.removeCallbacks(it) }
+                channelSearchRunnable = Runnable {
+                    viewModel.setChannelSearch(s?.toString() ?: "")
+                }.also { searchHandler.postDelayed(it, 400) }
+            }
+        })
         binding.etSearchChannels.setOnEditorActionListener { _, _, _ ->
+            channelSearchRunnable?.let { searchHandler.removeCallbacks(it) }
             viewModel.setChannelSearch(binding.etSearchChannels.text.toString())
             true
         }
@@ -128,9 +172,10 @@ class LiveTVFragment : Fragment() {
         if (!channel.logo.isNullOrBlank()) {
             Glide.with(this)
                 .load(channel.logo)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.ic_live)
                 .error(R.drawable.ic_live)
-                .transition(DrawableTransitionOptions.withCrossFade(300))
+                .transition(DrawableTransitionOptions.withCrossFade(200))
                 .into(binding.ivPreview)
         } else {
             binding.ivPreview.setImageResource(R.drawable.ic_live)
@@ -150,6 +195,8 @@ class LiveTVFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        categorySearchRunnable?.let { searchHandler.removeCallbacks(it) }
+        channelSearchRunnable?.let { searchHandler.removeCallbacks(it) }
         _binding = null
     }
 }

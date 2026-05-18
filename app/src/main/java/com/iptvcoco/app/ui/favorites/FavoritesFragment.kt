@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.iptvcoco.app.adapter.ChannelAdapter
 import com.iptvcoco.app.adapter.MovieAdapter
 import com.iptvcoco.app.adapter.SeriesAdapter
@@ -27,6 +28,7 @@ class FavoritesFragment : Fragment() {
     private lateinit var channelAdapter: ChannelAdapter
     private lateinit var movieAdapter: MovieAdapter
     private lateinit var seriesAdapter: SeriesAdapter
+    private val sharedPool = RecyclerView.RecycledViewPool()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -81,6 +83,8 @@ class FavoritesFragment : Fragment() {
         binding.rvChannels.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = channelAdapter
+            isNestedScrollingEnabled = false
+            setRecycledViewPool(sharedPool)
         }
 
         movieAdapter = MovieAdapter(
@@ -101,6 +105,8 @@ class FavoritesFragment : Fragment() {
         binding.rvMovies.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = movieAdapter
+            isNestedScrollingEnabled = false
+            setRecycledViewPool(sharedPool)
         }
 
         seriesAdapter = SeriesAdapter(
@@ -121,6 +127,8 @@ class FavoritesFragment : Fragment() {
         binding.rvSeries.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = seriesAdapter
+            isNestedScrollingEnabled = false
+            setRecycledViewPool(sharedPool)
         }
     }
 
@@ -129,7 +137,7 @@ class FavoritesFragment : Fragment() {
                 viewModel.favoriteMovies.value?.isNotEmpty() == true ||
                 viewModel.favoriteSeries.value?.isNotEmpty() == true
         binding.tvEmpty.visibility = if (hasAny) View.GONE else View.VISIBLE
-        binding.contentLayout.visibility = if (hasAny) View.VISIBLE else View.GONE
+        binding.scrollView.visibility = if (hasAny) View.VISIBLE else View.GONE
     }
 
     override fun onResume() {

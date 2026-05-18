@@ -1,16 +1,16 @@
 package com.iptvcoco.app.viewmodel
 
-import com.iptvcoco.app.IPTVCocoApplication
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.iptvcoco.app.IPTVCocoApplication
 import com.iptvcoco.app.model.Channel
 import com.iptvcoco.app.model.Movie
 import com.iptvcoco.app.model.Series
 
 class FavoritesViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = IPTVCocoApplication.instance.repository
+    private val repository = (application as IPTVCocoApplication).repository
 
     private val _favoriteChannels = MutableLiveData<List<Channel>>()
     val favoriteChannels: LiveData<List<Channel>> = _favoriteChannels

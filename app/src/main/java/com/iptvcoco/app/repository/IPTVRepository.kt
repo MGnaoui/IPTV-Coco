@@ -6,10 +6,13 @@ import com.iptvcoco.app.model.Channel
 import com.iptvcoco.app.model.ContentType
 import com.iptvcoco.app.model.M3UAccount
 import com.iptvcoco.app.model.Movie
+import com.iptvcoco.app.model.Season
 import com.iptvcoco.app.model.Series
 import com.iptvcoco.app.parser.M3UParser
+import com.iptvcoco.app.util.AppLogger
 import com.iptvcoco.app.util.PreferencesManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.HttpURLConnection
@@ -18,16 +21,30 @@ import java.net.URL
 class IPTVRepository(context: Context) {
     private val prefs = PreferencesManager(context)
     private val cacheFile = File(context.cacheDir, "playlist.m3u")
+    private val jsonCacheFile = File(context.cacheDir, "playlist.json")
+    private val gson = com.google.gson.Gson()
 
     private var parsedPlaylist: M3UParser.ParsedPlaylist? = null
 
     init {
-        if (isLoggedIn() && cacheFile.exists()) {
-            try {
-                val content = cacheFile.readText()
-                parsedPlaylist = M3UParser.parsePlaylist(content)
-            } catch (_: Exception) {
-                // ignore parse errors on init
+        if (isLoggedIn()) {
+            // Try M3U cache first
+            if (cacheFile.exists()) {
+                try {
+                    val content = cacheFile.readText()
+                    parsedPlaylist = M3UParser.parsePlaylist(content)
+                } catch (_: Exception) {
+                    // ignore parse errors on init
+                }
+            }
+            // Fallback to JSON cache (Xtream)
+            if (parsedPlaylist == null && jsonCacheFile.exists()) {
+                try {
+                    val json = jsonCacheFile.readText()
+                    parsedPlaylist = gson.fromJson(json, M3UParser.ParsedPlaylist::class.java)
+                } catch (_: Exception) {
+                    // ignore parse errors on init
+                }
             }
         }
     }
@@ -58,6 +75,7 @@ class IPTVRepository(context: Context) {
         prefs.clearAll()
         parsedPlaylist = null
         cacheFile.delete()
+        jsonCacheFile.delete()
     }
 
     fun getCategories(type: ContentType): List<Category> {
@@ -93,6 +111,31 @@ class IPTVRepository(context: Context) {
 
     fun getSeriesById(id: String): Series? {
         return parsedPlaylist?.series?.find { it.id == id }
+    }
+
+    fun getSeriesInfo(seriesId: String): Series? {
+        val series = getSeriesById(seriesId) ?: return null
+        // M3U playlists already have seasons populated
+        if (series.seasons.isNotEmpty()) return series
+
+        val account = getAccount() ?: return series
+        return if (account.type == M3UAccount.AccountType.XTREAM) {
+            try {
+                val xtreamSeriesId = seriesId.removePrefix("ser_")
+                val seasons = com.iptvcoco.app.parser.XtreamParser.fetchSeriesInfo(
+                    account.url.trim().trimEnd('/'),
+                    account.username ?: "",
+                    account.password ?: "",
+                    xtreamSeriesId
+                )
+                series.copy(seasons = seasons)
+            } catch (e: Exception) {
+                AppLogger.logEvent("Failed to fetch series info for $seriesId: ${e.message}")
+                series
+            }
+        } else {
+            series
+        }
     }
 
     fun searchChannels(query: String, categoryId: String? = null): List<Channel> {
@@ -171,10 +214,32 @@ class IPTVRepository(context: Context) {
     }
 
     suspend fun login(account: M3UAccount): Result<M3UParser.ParsedPlaylist> = withContext(Dispatchers.IO) {
-        when (account.type ?: M3UAccount.AccountType.M3U) {
-            M3UAccount.AccountType.M3U -> loginM3U(account)
-            M3UAccount.AccountType.XTREAM -> loginXtream(account)
+        val maxRetries = 3
+        val errors = mutableListOf<String>()
+
+        repeat(maxRetries) { attempt ->
+            val result = when (account.type ?: M3UAccount.AccountType.M3U) {
+                M3UAccount.AccountType.M3U -> loginM3U(account)
+                M3UAccount.AccountType.XTREAM -> loginXtream(account)
+            }
+
+            if (result.isSuccess) {
+                AppLogger.logEvent("Login succeeded on attempt ${attempt + 1} (${account.type})")
+                return@withContext result
+            }
+
+            val errorMsg = result.exceptionOrNull()?.message ?: "Unknown error"
+            errors.add("Attempt ${attempt + 1}/$maxRetries: $errorMsg")
+            AppLogger.logEvent("Login attempt ${attempt + 1}/$maxRetries failed (${account.type}): $errorMsg")
+
+            if (attempt < maxRetries - 1) {
+                delay(1500)
+            }
         }
+
+        val summary = errors.joinToString("\n")
+        AppLogger.logEvent("Login failed after $maxRetries attempts.\n$summary")
+        Result.failure(Exception("Not connected after $maxRetries attempts.\n$summary"))
     }
 
     private fun loginM3U(account: M3UAccount): Result<M3UParser.ParsedPlaylist> {
@@ -189,8 +254,8 @@ class IPTVRepository(context: Context) {
                 prefs.saveAccount(account)
                 prefs.saveLastRefresh(System.currentTimeMillis())
                 return Result.success(playlist)
-            } catch (e: Exception) {
-                errors.add("• ${e.message}")
+            } catch (t: Throwable) {
+                errors.add("• ${t.message}")
             }
         }
         val summary = errors.joinToString("\n")
@@ -207,11 +272,15 @@ class IPTVRepository(context: Context) {
                 account.password ?: ""
             )
             parsedPlaylist = playlist
+            // Save as JSON cache for instant restart
+            try {
+                jsonCacheFile.writeText(gson.toJson(playlist))
+            } catch (_: Exception) { }
             prefs.saveAccount(account)
             prefs.saveLastRefresh(System.currentTimeMillis())
             Result.success(playlist)
-        } catch (e: Exception) {
-            Result.failure(Exception("Xtream login failed: ${e.message}"))
+        } catch (t: Throwable) {
+            Result.failure(Exception("Xtream login failed: ${t.message}"))
         }
     }
 

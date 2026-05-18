@@ -1,16 +1,16 @@
 package com.iptvcoco.app.viewmodel
 
-import com.iptvcoco.app.IPTVCocoApplication
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.iptvcoco.app.IPTVCocoApplication
 import com.iptvcoco.app.model.M3UAccount
 import kotlinx.coroutines.launch
 
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = IPTVCocoApplication.instance.repository
+    private val repository = (application as IPTVCocoApplication).repository
 
     private val _loginState = MutableLiveData<LoginState>()
     val loginState: LiveData<LoginState> = _loginState

@@ -12,12 +12,14 @@ import com.iptvcoco.app.R
 import com.iptvcoco.app.databinding.ActivityLoginBinding
 import com.iptvcoco.app.model.M3UAccount
 import com.iptvcoco.app.ui.main.MainActivity
+import com.iptvcoco.app.util.AppLogger
 import com.iptvcoco.app.viewmodel.LoginViewModel
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private val viewModel: LoginViewModel by viewModels()
+    private var navigateRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,13 +44,22 @@ class LoginActivity : AppCompatActivity() {
                 binding.etUsername.error = getString(R.string.username_required)
                 return@setOnClickListener
             }
+            if (password.isEmpty()) {
+                binding.etPassword.error = getString(R.string.password_required)
+                return@setOnClickListener
+            }
 
             val type = when (binding.rgLoginType.checkedRadioButtonId) {
                 R.id.rbXtream -> M3UAccount.AccountType.XTREAM
                 else -> M3UAccount.AccountType.M3U
             }
 
-            viewModel.login(url, username, password, type)
+            var fixedUrl = url
+            if (!fixedUrl.startsWith("http://", ignoreCase = true) && !fixedUrl.startsWith("https://", ignoreCase = true)) {
+                fixedUrl = "http://$fixedUrl"
+            }
+
+            viewModel.login(fixedUrl, username, password, type)
         }
 
         viewModel.loginState.observe(this) { state ->
@@ -64,7 +75,8 @@ class LoginActivity : AppCompatActivity() {
                     binding.tvConnectionStatus.visibility = View.VISIBLE
                     binding.tvConnectionStatus.text = getString(R.string.connected)
                     binding.tvConnectionStatus.setTextColor(ContextCompat.getColor(this, R.color.red_netflix))
-                    binding.tvConnectionStatus.postDelayed({ navigateToMain() }, 600)
+                    navigateRunnable = Runnable { navigateToMain() }
+                    binding.tvConnectionStatus.postDelayed(navigateRunnable!!, 600)
                 }
                 is LoginViewModel.LoginState.Error -> {
                     binding.progressBar.visibility = View.GONE
@@ -72,6 +84,7 @@ class LoginActivity : AppCompatActivity() {
                     binding.tvConnectionStatus.visibility = View.VISIBLE
                     binding.tvConnectionStatus.text = getString(R.string.connection_error)
                     binding.tvConnectionStatus.setTextColor(Color.parseColor("#FF4444"))
+                    AppLogger.logEvent("Login error shown to user: ${state.message}")
                     showRetryDialog(state.message)
                 }
                 else -> {
@@ -97,5 +110,12 @@ class LoginActivity : AppCompatActivity() {
     private fun navigateToMain() {
         startActivity(Intent(this, MainActivity::class.java))
         finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        navigateRunnable?.let {
+            binding.tvConnectionStatus.removeCallbacks(it)
+        }
     }
 }
