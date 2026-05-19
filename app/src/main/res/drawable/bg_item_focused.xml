@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Hollow white border on focus — does NOT cover content underneath -->
     <item android:state_focused="true">
         <shape android:shape="rectangle">
-            <stroke android:width="4dp" android:color="@color/white" />
-            <corners android:radius="12dp" />
+            <stroke
+                android:width="4dp"
+                android:color="@color/white" />
+            <corners android:radius="16dp" />
         </shape>
     </item>
     <item android:state_selected="true">
         <shape android:shape="rectangle">
-            <stroke android:width="2dp" android:color="@color/red_netflix" />
-            <corners android:radius="12dp" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/white" />
+            <corners android:radius="16dp" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@android:color/transparent" />
-            <corners android:radius="12dp" />
+            <corners android:radius="16dp" />
         </shape>
     </item>
 </selector>

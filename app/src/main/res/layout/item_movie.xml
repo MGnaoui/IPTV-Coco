@@ -28,20 +28,8 @@
                     android:id="@+id/ivPoster"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/movies"
                     android:scaleType="centerCrop" />
-
-                <!-- Favorite badge -->
-                <ImageView
-                    android:id="@+id/ivFavorite"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_gravity="top|end"
-                    android:layout_margin="6dp"
-                    android:background="@drawable/bg_favorite_badge"
-                    android:padding="5dp"
-                    android:src="@drawable/ic_favorite"
-                    app:tint="@color/favorite_inactive"
-                    android:visibility="visible" />
 
                 <!-- Gradient overlay at bottom for text readability -->
                 <View

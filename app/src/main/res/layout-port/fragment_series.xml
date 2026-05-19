@@ -22,7 +22,9 @@
             style="@style/SearchEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/search_series" />
+            android:hint="@string/search_series"
+            android:importantForAutofill="no"
+            android:inputType="text" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvCategories"

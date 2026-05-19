@@ -24,7 +24,9 @@
             style="@style/SearchEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/search_categories" />
+            android:hint="@string/search_categories"
+            android:importantForAutofill="no"
+            android:inputType="text" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvCategories"
@@ -58,7 +60,9 @@
             style="@style/SearchEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/search_movies" />
+            android:hint="@string/search_movies"
+            android:importantForAutofill="no"
+            android:inputType="text" />
 
         <FrameLayout
             android:layout_width="match_parent"

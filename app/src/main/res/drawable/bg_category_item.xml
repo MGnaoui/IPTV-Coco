@@ -2,21 +2,41 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
         <shape android:shape="rectangle">
-            <solid android:color="@color/red_netflix_20" />
-            <corners android:radius="4dp" />
-            <stroke android:width="3dp" android:color="@color/white" />
+            <solid android:color="@color/dark_surface_elevated" />
+            <corners android:radius="12dp" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/white" />
         </shape>
     </item>
     <item android:state_selected="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/selected_highlight" />
-            <corners android:radius="4dp" />
-        </shape>
+        <layer-list>
+            <!-- Subtle left blue indicator -->
+            <item
+                android:width="3dp"
+                android:gravity="start|fill_vertical">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/accent" />
+                    <corners
+                        android:topLeftRadius="12dp"
+                        android:bottomLeftRadius="12dp" />
+                </shape>
+            </item>
+            <!-- Dark surface background -->
+            <item android:left="3dp">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/dark_surface" />
+                    <corners
+                        android:topRightRadius="12dp"
+                        android:bottomRightRadius="12dp" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@color/dark_card" />
-            <corners android:radius="4dp" />
+            <corners android:radius="12dp" />
         </shape>
     </item>
 </selector>

@@ -346,7 +346,7 @@ class PlayerActivity : AppCompatActivity() {
                 if (isFav) R.drawable.ic_favorite_filled else R.drawable.ic_favorite
             )
             binding.btnFavorite.setColorFilter(
-                if (isFav) getColor(R.color.red_netflix) else getColor(R.color.white)
+                if (isFav) getColor(R.color.accent) else getColor(R.color.white)
             )
         }
     }

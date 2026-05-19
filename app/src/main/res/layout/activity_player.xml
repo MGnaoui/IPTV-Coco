@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:indeterminateTint="@color/red_netflix" />
+        android:indeterminateTint="@color/accent" />
 
     <!-- Controls overlay -->
     <FrameLayout
@@ -228,7 +228,7 @@
                 android:layout_weight="1"
                 android:max="1000"
                 android:progressDrawable="@drawable/bg_progress"
-                android:thumbTint="@color/red_netflix" />
+                android:thumbTint="@color/accent" />
 
             <ImageButton
                 android:id="@+id/btnFavorite"

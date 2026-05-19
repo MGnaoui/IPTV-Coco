@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_background">
+
+    <!-- Hidden toolbar (phone only, needed for ViewBinding) -->
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Hidden settings button (phone only, needed for ViewBinding) -->
+    <ImageButton
+        android:id="@+id/btnSettings"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        tools:ignore="MissingConstraints" />
+
+    <!-- Hidden bottom nav (phone only, needed for ViewBinding) -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        tools:ignore="MissingConstraints" />
+
+    <!-- Left sidebar -->
+    <LinearLayout
+        android:id="@+id/sidebar"
+        android:layout_width="72dp"
+        android:layout_height="0dp"
+        android:background="@color/black"
+        android:elevation="8dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingVertical="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- App logo -->
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="48dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_logo" />
+
+        <!-- Live TV -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginVertical="4dp">
+
+            <View
+                android:id="@+id/indicatorLive"
+                android:layout_width="3dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center_vertical|start"
+                android:layout_marginStart="0dp"
+                android:background="@drawable/bg_sidebar_indicator"
+                android:visibility="invisible" />
+
+            <ImageButton
+                android:id="@+id/btnSidebarLive"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/live_tv"
+                android:focusable="true"
+                android:foreground="@drawable/bg_tv_button_focused"
+                android:nextFocusUp="@id/btnSidebarSettings"
+                android:nextFocusRight="@id/container"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_live"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <!-- Movies -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginVertical="4dp">
+
+            <View
+                android:id="@+id/indicatorMovies"
+                android:layout_width="3dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center_vertical|start"
+                android:layout_marginStart="0dp"
+                android:background="@drawable/bg_sidebar_indicator"
+                android:visibility="invisible" />
+
+            <ImageButton
+                android:id="@+id/btnSidebarMovies"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/movies"
+                android:focusable="true"
+                android:foreground="@drawable/bg_tv_button_focused"
+                android:nextFocusRight="@id/container"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_movie"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <!-- Series -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginVertical="4dp">
+
+            <View
+                android:id="@+id/indicatorSeries"
+                android:layout_width="3dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center_vertical|start"
+                android:layout_marginStart="0dp"
+                android:background="@drawable/bg_sidebar_indicator"
+                android:visibility="invisible" />
+
+            <ImageButton
+                android:id="@+id/btnSidebarSeries"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/series"
+                android:focusable="true"
+                android:foreground="@drawable/bg_tv_button_focused"
+                android:nextFocusRight="@id/container"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_tv"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <!-- Favorites -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginVertical="4dp">
+
+            <View
+                android:id="@+id/indicatorFavorites"
+                android:layout_width="3dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center_vertical|start"
+                android:layout_marginStart="0dp"
+                android:background="@drawable/bg_sidebar_indicator"
+                android:visibility="invisible" />
+
+            <ImageButton
+                android:id="@+id/btnSidebarFavorites"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/favorites"
+                android:focusable="true"
+                android:foreground="@drawable/bg_tv_button_focused"
+                android:nextFocusDown="@id/btnSidebarSettings"
+                android:nextFocusRight="@id/container"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_favorite"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Settings -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginVertical="4dp">
+
+            <ImageButton
+                android:id="@+id/btnSidebarSettings"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/user_menu"
+                android:focusable="true"
+                android:foreground="@drawable/bg_tv_button_focused"
+                android:nextFocusUp="@id/btnSidebarLive"
+                android:nextFocusRight="@id/container"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_settings"
+                app:tint="@color/gray_text" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Content area -->
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipChildren="false"
+        android:nextFocusLeft="@id/sidebar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/sidebar"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

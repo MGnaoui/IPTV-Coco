@@ -3,13 +3,12 @@ package com.iptvcoco.app.ui.main
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.View
-import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
-import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.iptvcoco.app.IPTVCocoApplication
@@ -32,12 +31,17 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var repository: IPTVRepository
-    private var currentNavItemId: Int = R.id.nav_live
+    private var currentNavItemId: Int = -1
+    private var isTvMode = false
+
+    private val sidebarButtons = mutableMapOf<Int, ImageButton?>()
+    private val sidebarIndicators = mutableMapOf<Int, View?>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        isTvMode = DeviceUtils.isTv(this)
 
         repository = (application as IPTVCocoApplication).repository
         if (repository.isLoggedIn() && repository.getCategories(com.iptvcoco.app.model.ContentType.LIVE).isEmpty()) {
@@ -59,72 +63,61 @@ class MainActivity : AppCompatActivity() {
             transaction.commit()
         }
 
+        if (isTvMode) {
+            setupTvSidebar()
+        } else {
+            setupPhoneBottomNav()
+        }
+    }
+
+    private fun setupPhoneBottomNav() {
         binding.bottomNav.setOnItemSelectedListener { item ->
             switchTab(item.itemId)
             true
         }
-
         binding.btnSettings.setOnClickListener {
             showUserMenuDialog()
+        }
+    }
+
+    private fun setupTvSidebar() {
+        sidebarButtons[R.id.nav_live] = findViewById(R.id.btnSidebarLive)
+        sidebarButtons[R.id.nav_movies] = findViewById(R.id.btnSidebarMovies)
+        sidebarButtons[R.id.nav_series] = findViewById(R.id.btnSidebarSeries)
+        sidebarButtons[R.id.nav_favorites] = findViewById(R.id.btnSidebarFavorites)
+
+        sidebarIndicators[R.id.nav_live] = findViewById(R.id.indicatorLive)
+        sidebarIndicators[R.id.nav_movies] = findViewById(R.id.indicatorMovies)
+        sidebarIndicators[R.id.nav_series] = findViewById(R.id.indicatorSeries)
+        sidebarIndicators[R.id.nav_favorites] = findViewById(R.id.indicatorFavorites)
+
+        sidebarButtons.forEach { (itemId, btn) ->
+            btn?.setOnClickListener {
+                switchTab(itemId)
+            }
+        }
+
+        findViewById<ImageButton?>(R.id.btnSidebarSettings)?.setOnClickListener {
+            showUserMenuDialog()
+        }
+
+        updateSidebarSelection()
+    }
+
+    private fun updateSidebarSelection() {
+        if (!isTvMode) return
+        sidebarButtons.forEach { (itemId, btn) ->
+            val isSelected = itemId == currentNavItemId
+            btn?.setColorFilter(
+                if (isSelected) getColor(R.color.accent) else getColor(R.color.gray_text)
+            )
+            sidebarIndicators[itemId]?.visibility = if (isSelected) View.VISIBLE else View.INVISIBLE
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt("currentNavItemId", currentNavItemId)
-    }
-
-    /** TV: Intercept D-pad to jump between fragment content and bottom nav */
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (DeviceUtils.isTv(this) && event.action == KeyEvent.ACTION_DOWN) {
-            when (event.keyCode) {
-                KeyEvent.KEYCODE_DPAD_DOWN -> {
-                    val focused = currentFocus
-                    if (focused != null && !isDescendantOf(focused, binding.bottomNav)) {
-                        jumpToBottomNav()
-                        return true
-                    }
-                }
-                KeyEvent.KEYCODE_DPAD_UP -> {
-                    val focused = currentFocus
-                    if (focused != null && isDescendantOf(focused, binding.bottomNav)) {
-                        jumpToFragmentContent()
-                        return true
-                    }
-                }
-            }
-        }
-        return super.dispatchKeyEvent(event)
-    }
-
-    private fun isDescendantOf(child: View, parent: ViewGroup): Boolean {
-        var current: View? = child
-        while (current != null) {
-            if (current === parent) return true
-            current = current.parent as? View
-        }
-        return false
-    }
-
-    private fun jumpToBottomNav() {
-        val menuView = binding.bottomNav.getChildAt(0) as? ViewGroup
-        val target = menuView?.children?.find { it.id == binding.bottomNav.selectedItemId }
-        if (target?.requestFocus() != true) {
-            binding.bottomNav.requestFocus()
-        }
-    }
-
-    private fun jumpToFragmentContent() {
-        val fragment = supportFragmentManager.findFragmentByTag(tagFor(currentNavItemId))
-        val view = fragment?.view ?: return
-        // Try to focus the main RecyclerView in the current fragment
-        val target = view.findViewById<View>(R.id.rvMovies)
-            ?: view.findViewById<View>(R.id.rvSeries)
-            ?: view.findViewById<View>(R.id.rvChannels)
-            ?: view.findViewById<View>(R.id.rvCategories)
-        if (target?.requestFocus() != true) {
-            view.requestFocus()
-        }
     }
 
     private fun switchTab(itemId: Int) {
@@ -146,6 +139,12 @@ class MainActivity : AppCompatActivity() {
         transaction.commit()
 
         currentNavItemId = itemId
+
+        if (isTvMode) {
+            updateSidebarSelection()
+        } else {
+            binding.bottomNav.selectedItemId = itemId
+        }
     }
 
     private fun createFragment(itemId: Int): Fragment {

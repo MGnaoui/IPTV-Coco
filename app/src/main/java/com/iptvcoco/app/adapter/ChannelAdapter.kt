@@ -35,7 +35,6 @@ class ChannelAdapter(
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val logo: ImageView = itemView.findViewById(R.id.ivChannelLogo)
         private val name: TextView = itemView.findViewById(R.id.tvChannelName)
-        private val favoriteIcon: ImageView = itemView.findViewById(R.id.ivFavorite)
 
         init {
             TvFocusHelper.apply(itemView)
@@ -43,15 +42,6 @@ class ChannelAdapter(
                 val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
                     onChannelClick(getItem(pos))
-                }
-            }
-            favoriteIcon.setOnClickListener {
-                val pos = bindingAdapterPosition
-                if (pos != RecyclerView.NO_POSITION) {
-                    val channel = getItem(pos)
-                    val fav = !isFavorite(channel.id)
-                    onFavoriteClick?.invoke(channel.id, fav)
-                    updateFavoriteIcon(fav)
                 }
             }
         }
@@ -70,17 +60,6 @@ class ChannelAdapter(
             } else {
                 logo.setImageResource(R.drawable.ic_live)
             }
-            updateFavoriteIcon(isFavorite(channel.id))
-        }
-
-        private fun updateFavoriteIcon(isFav: Boolean) {
-            favoriteIcon.setImageResource(
-                if (isFav) R.drawable.ic_favorite_filled else R.drawable.ic_favorite
-            )
-            favoriteIcon.setColorFilter(
-                if (isFav) itemView.context.getColor(R.color.favorite_active)
-                else itemView.context.getColor(R.color.favorite_inactive)
-            )
         }
     }
 

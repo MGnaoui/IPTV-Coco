@@ -8,24 +8,17 @@
       android:scaleY="0.65"
       android:translateX="18.9"
       android:translateY="18.9">
-    <!-- TV Screen -->
+    <!-- Background rounded rect -->
     <path
-        android:fillColor="@color/white"
-        android:pathData="M16,28L16,72C16,76.4 19.6,80 24,80L84,80C88.4,80 92,76.4 92,72L92,28C92,23.6 88.4,20 84,20L24,20C19.6,20 16,23.6 16,28ZM24,28L84,28L84,72L24,72L24,28Z"/>
-    <!-- Stand -->
+        android:fillColor="#0A84FF"
+        android:pathData="M20,8L84,8C92.84,8 100,15.16 100,24L100,84C100,92.84 92.84,100 84,100L20,100C11.16,100 4,92.84 4,84L4,24C4,15.16 11.16,8 20,8Z"/>
+    <!-- TV screen -->
     <path
-        android:fillColor="@color/white"
-        android:pathData="M44,80L44,88L64,88L64,80L44,80Z"/>
-    <!-- Play Triangle -->
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,28L80,28C82.21,28 84,29.79 84,32L84,68C84,70.21 82.21,72 80,72L24,72C21.79,72 20,70.21 20,68L20,32C20,29.79 21.79,28 24,28ZM26,34L78,34L78,66L26,66L26,34Z"/>
+    <!-- Play triangle -->
     <path
-        android:fillColor="@color/white"
-        android:pathData="M46,38L46,62L70,50L46,38Z"/>
-    <!-- Antenna lines -->
-    <path
-        android:fillColor="@color/white"
-        android:pathData="M36,20L28,8L32,8L40,20Z"/>
-    <path
-        android:fillColor="@color/white"
-        android:pathData="M72,20L80,8L76,8L68,20Z"/>
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,40L42,60L64,50L42,40Z"/>
   </group>
 </vector>

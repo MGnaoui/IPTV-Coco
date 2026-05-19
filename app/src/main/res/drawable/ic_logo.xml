@@ -1,22 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="120dp"
     android:height="120dp"
     android:viewportWidth="120"
     android:viewportHeight="120">
-  <!-- Outer glow circle -->
+  <!-- Outer rounded rectangle background -->
   <path
-      android:fillColor="@color/red_netflix_20"
-      android:pathData="M60,60m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0"/>
-  <!-- Inner circle -->
+      android:fillColor="#0A84FF"
+      android:pathData="M24,8L96,8C104.84,8 112,15.16 112,24L112,96C112,104.84 104.84,112 96,112L24,112C15.16,112 8,104.84 8,96L8,24C8,15.16 15.16,8 24,8Z"/>
+  <!-- Inner subtle highlight for depth -->
   <path
-      android:fillColor="@color/red_netflix"
-      android:pathData="M60,60m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0"/>
-  <!-- TV Screen -->
+      android:fillColor="#1C9DFF"
+      android:pathData="M24,12L96,12C102.63,12 108,17.37 108,24L108,48C108,41.37 102.63,36 96,36L24,36C17.37,36 12,41.37 12,48L12,24C12,17.37 17.37,12 24,12Z"/>
+  <!-- TV screen frame -->
   <path
-      android:fillColor="@color/white"
-      android:pathData="M35,45L35,75C35,78.3 37.7,81 41,81L79,81C82.3,81 85,78.3 85,75L85,45C85,41.7 82.3,39 79,39L41,39C37.7,39 35,41.7 35,45ZM41,45L79,45L79,75L41,75L41,45Z"/>
-  <!-- Play Triangle -->
+      android:fillColor="#000000"
+      android:pathData="M30,32L90,32C93.31,32 96,34.69 96,38L96,78C96,81.31 93.31,84 90,84L30,84C26.69,84 24,81.31 24,78L24,38C24,34.69 26.69,32 30,32Z"/>
+  <!-- Screen inner -->
   <path
-      android:fillColor="@color/red_netflix"
-      android:pathData="M48,52L48,68L68,60L48,52Z"/>
+      android:fillColor="#0A0A0A"
+      android:pathData="M32,36L88,36C89.1,36 90,36.9 90,38L90,76C90,77.1 89.1,78 88,78L32,78C30.9,78 30,77.1 30,76L30,38C30,36.9 30.9,36 32,36Z"/>
+  <!-- Play triangle -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M52,46L52,70L76,58Z"/>
 </vector>

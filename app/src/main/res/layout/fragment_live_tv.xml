@@ -23,7 +23,9 @@
             style="@style/SearchEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/search_categories" />
+            android:hint="@string/search_categories"
+            android:importantForAutofill="no"
+            android:inputType="text" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvCategories"
@@ -49,7 +51,9 @@
             style="@style/SearchEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/search_channels" />
+            android:hint="@string/search_channels"
+            android:importantForAutofill="no"
+            android:inputType="text" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -106,6 +110,7 @@
                 android:id="@+id/ivPreview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:contentDescription="@string/live_tv"
                 android:scaleType="centerCrop" />
 
             <View
@@ -128,6 +133,7 @@
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_gravity="center"
+                android:contentDescription="@string/play"
                 android:src="@drawable/ic_play"
                 app:tint="@color/white"
                 android:background="@drawable/bg_button_circle"

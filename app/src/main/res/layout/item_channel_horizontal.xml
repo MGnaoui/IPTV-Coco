@@ -23,18 +23,9 @@
                 android:id="@+id/ivChannelLogo"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
+                android:contentDescription="@string/live_tv"
                 android:scaleType="fitCenter" />
 
-            <ImageView
-                android:id="@+id/ivFavorite"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_gravity="top|end"
-                android:background="@drawable/bg_favorite_badge"
-                android:padding="4dp"
-                android:src="@drawable/ic_favorite"
-                app:tint="@color/favorite_inactive"
-                android:visibility="visible" />
         </FrameLayout>
 
         <TextView

@@ -1,7 +1,6 @@
 package com.iptvcoco.app.ui.login
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
@@ -74,7 +73,7 @@ class LoginActivity : AppCompatActivity() {
                     binding.btnLogin.isEnabled = true
                     binding.tvConnectionStatus.visibility = View.VISIBLE
                     binding.tvConnectionStatus.text = getString(R.string.connected)
-                    binding.tvConnectionStatus.setTextColor(ContextCompat.getColor(this, R.color.red_netflix))
+                    binding.tvConnectionStatus.setTextColor(ContextCompat.getColor(this, R.color.accent))
                     navigateRunnable = Runnable { navigateToMain() }
                     binding.tvConnectionStatus.postDelayed(navigateRunnable!!, 600)
                 }
@@ -83,7 +82,7 @@ class LoginActivity : AppCompatActivity() {
                     binding.btnLogin.isEnabled = true
                     binding.tvConnectionStatus.visibility = View.VISIBLE
                     binding.tvConnectionStatus.text = getString(R.string.connection_error)
-                    binding.tvConnectionStatus.setTextColor(Color.parseColor("#FF4444"))
+                    binding.tvConnectionStatus.setTextColor(ContextCompat.getColor(this, R.color.error_red))
                     AppLogger.logEvent("Login error shown to user: ${state.message}")
                     showRetryDialog(state.message)
                 }

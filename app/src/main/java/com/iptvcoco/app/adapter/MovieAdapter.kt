@@ -34,7 +34,6 @@ class MovieAdapter(
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val poster: ImageView = itemView.findViewById(R.id.ivPoster)
         private val title: TextView = itemView.findViewById(R.id.tvTitle)
-        private val favoriteIcon: ImageView = itemView.findViewById(R.id.ivFavorite)
 
         init {
             TvFocusHelper.apply(itemView)
@@ -42,15 +41,6 @@ class MovieAdapter(
                 val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
                     onMovieClick(getItem(pos))
-                }
-            }
-            favoriteIcon.setOnClickListener {
-                val pos = bindingAdapterPosition
-                if (pos != RecyclerView.NO_POSITION) {
-                    val movie = getItem(pos)
-                    val fav = !isFavorite(movie.id)
-                    onFavoriteClick?.invoke(movie.id, fav)
-                    updateFavoriteIcon(fav)
                 }
             }
         }
@@ -69,17 +59,6 @@ class MovieAdapter(
             } else {
                 poster.setImageResource(R.drawable.ic_movie)
             }
-            updateFavoriteIcon(isFavorite(movie.id))
-        }
-
-        private fun updateFavoriteIcon(isFav: Boolean) {
-            favoriteIcon.setImageResource(
-                if (isFav) R.drawable.ic_favorite_filled else R.drawable.ic_favorite
-            )
-            favoriteIcon.setColorFilter(
-                if (isFav) itemView.context.getColor(R.color.favorite_active)
-                else itemView.context.getColor(R.color.favorite_inactive)
-            )
         }
     }
 

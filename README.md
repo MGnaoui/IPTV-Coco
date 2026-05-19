@@ -16,7 +16,9 @@
 
 ## 🎯 What is IPTV Coco?
 
-**IPTV Coco** is a lightweight, high-performance IPTV streaming app built for Android. It supports both **M3U playlists** and **Xtream Codes API**, with full support for **Live TV**, **Movies**, and **TV Series**. The app is uniquely optimized for both **touch devices** (phones/tablets) and **Android TV** — automatically adapting its behavior to the device you're on.
+**IPTV Coco** is a lightweight, high-performance IPTV streaming app built for Android. It supports both **M3U playlists** and **Xtream Codes API**, with full support for **Live TV**, **Movies**, and **TV Series**. The app is uniquely optimized for both **touch devices** (phones/tablets) and **Android TV** — automatically adapting its UI and navigation to the device you're on.
+
+The app features a **premium Apple TV-inspired design** with deep blacks, subtle blue accents, and generous rounded corners for a cinematic feel.
 
 ---
 
@@ -28,7 +30,7 @@
 | 🎬 **Live TV** | Grid-based channel browser with category filtering and real-time EPG |
 | 🍿 **Movies** | On-demand library with poster grids, detail screens, and resume playback |
 | 📺 **TV Series** | Season & episode grouping with on-demand episode loading |
-| ⭐ **Favorites** | One-tap favorite any channel, movie, or series — accessible from a dedicated tab |
+| ⭐ **Favorites** | Favorite any channel, movie, or series from the detail screen — accessible from a dedicated tab |
 | 🔍 **Real-time Search** | Instant debounced search across all content with 400ms typing delay |
 | 🔐 **Dual Login** | Connect via **M3U URL** or **Xtream Codes API** (username/password) |
 | 🎮 **Custom Player** | Fullscreen ExoPlayer with gesture controls, seek bar, and auto-hide UI |
@@ -37,12 +39,12 @@
 | Feature | Description |
 |---------|-------------|
 | 🎯 **D-Pad Navigation** | Full remote control support — navigate every screen with directional pad |
-| 🔦 **Crystal-Clear Focus** | Grid items show a **hollow white border** when focused; buttons get a **red glow + white stroke** — you always know where you are |
-| 🔎 **Scale Animation** | Focused items subtly scale up (6%) for unmistakable visual feedback |
+| 🔦 **Crystal-Clear Focus** | Grid items show a **hollow white border** when focused; sidebar buttons get a **soft blue glow**; selected tabs show a **blue indicator** |
+| 🔎 **Scale Animation** | Focused items subtly scale up for unmistakable visual feedback |
 | ⏯️ **Remote Player Controls** | D-Pad Left/Right seeks, Up/Down changes channels, Center toggles play/pause |
 | 🔗 **Predictable Focus Chains** | Every control has explicit `nextFocus` attributes — D-pad never gets lost |
 | ♿ **Accessibility Compliant** | All controls have `contentDescription`, every touch target is ≥48dp |
-| 🏠 **Leanback Launcher** | Appears directly on your Android TV home screen |
+| 🏠 **Leanback Launcher** | Appears directly on your Android TV home screen with a custom banner |
 
 ### ⚡ Performance
 | Feature | Description |
@@ -64,7 +66,8 @@
 - **Async:** Kotlin Coroutines
 - **Video Playback:** [AndroidX Media3 ExoPlayer](https://developer.android.com/media/media3/exoplayer)
 - **Image Loading:** [Glide](https://bumptech.github.io/glide/)
-- **UI:** ViewBinding · ConstraintLayout · RecyclerView · Material Components · NestedScrollView
+- **UI:** ViewBinding · ConstraintLayout · RecyclerView · Material Components · NestedScrollView · Material3
+- **Build:** R8 Full Mode · ProGuard · Resource Shrinking · Signed Release APK
 - **Serialization:** Gson
 - **TV Detection:** `Configuration.UI_MODE_TYPE_TELEVISION` + `PackageManager.FEATURE_LEANBACK`
 
@@ -76,11 +79,11 @@
 >
 > **Expected screens:**
 > - Login screen (M3U / Xtream toggle)
-> - Live TV grid with category chips
-> - Movie/Series poster grids
+> - Live TV grid with category chips and preview pane
+> - Movie/Series poster grids with clean white focus borders
 > - Detail screen with banner, plot, and episode selector
 > - Fullscreen player with controls overlay
-> - **Android TV:** D-pad focus border visible on selected item
+> - **Android TV:** Left sidebar navigation with blue selected indicator and white focus borders
 
 ---
 
@@ -102,6 +105,9 @@ cd IPTV-Coco
 # Build debug APK
 ./gradlew assembleDebug
 
+# Build signed release APK (R8 + resource shrinking enabled)
+./gradlew assembleRelease
+
 # Run lint
 ./gradlew lintDebug
 ```
@@ -122,18 +128,20 @@ app/build/outputs/apk/debug/app-debug.apk
 3. **Browse** — Use bottom navigation to switch between Live TV, Movies, Series, and Favorites.
 4. **Search** — Type in any search field; results update as you type.
 5. **Tap to play** — Select any item to launch the built-in player.
-6. **Player gestures:**
+6. **Favorite** — Open a movie, series, or channel to add it to Favorites.
+7. **Player gestures:**
    - **Tap** — Show/hide controls
    - **Swipe** — Adjust volume & brightness
    - **Seek bar** — Scrub through VOD content
 
 ### On Android TV (Remote / D-Pad)
 
-1. **Install** via sideload or Android TV app store.
+1. **Install** via sideload, Google Play Store, or Android TV app store.
 2. **Log in** — Navigate fields with D-Pad, use on-screen keyboard or remote app.
-3. **Browse** — D-Pad navigates between categories and content grids.
-4. **Always see your selection** — A **hollow white border** appears around focused grid items; buttons show a **red glow**.
-5. **Player remote controls:**
+3. **Browse** — D-Pad navigates between the left sidebar, categories, and content grids.
+4. **Always see your selection** — A **hollow white border** appears around focused grid items; sidebar buttons show a **soft blue glow**; the selected tab shows a **blue vertical indicator**.
+5. **Favorite** — Open a movie, series, or channel to add it to Favorites.
+6. **Player remote controls:**
    - **D-Pad Center / Enter** — Toggle play/pause or show controls
    - **D-Pad Left / Right** — Seek backward/forward (VOD)
    - **D-Pad Up / Down** — Change channel (Live TV)
@@ -151,7 +159,7 @@ app/src/main/java/com/iptvcoco/app/
 ├── repository/       # IPTVRepository — playlist cache, favorites, resume positions
 ├── ui/
 │   ├── login/        # LoginActivity (M3U / Xtream)
-│   ├── main/         # MainActivity with bottom nav & fragment state preservation
+│   ├── main/         # MainActivity with sidebar/bottom nav & fragment state preservation
 │   ├── live/         # LiveTVFragment — channel grid + preview + EPG
 │   ├── movies/       # MoviesFragment — poster grid + search
 │   ├── series/       # SeriesFragment — poster grid + search
@@ -171,9 +179,10 @@ app/src/main/java/com/iptvcoco/app/
 |-----------|---------------|
 | **TV Detection** | `DeviceUtils.isTv()` checks `UI_MODE_TYPE_TELEVISION` + `FEATURE_LEANBACK` |
 | **Focus Animation** | `TvFocusHelper.apply()` scales views up on focus — **disabled on phones** |
-| **Focus Borders** | `bg_item_focused.xml` — hollow white border so content stays visible; `bg_circle_focused.xml` — red glow for buttons |
+| **Focus Borders** | `bg_item_focused.xml` — hollow white border so content stays visible; `bg_tv_button_focused.xml` — soft blue glow for sidebar buttons |
 | **Focus Chains** | Explicit `nextFocusLeft/Right/Up/Down` on all player controls for predictable D-pad navigation |
 | **DiffUtil** | All 6 adapters extend `ListAdapter` with `DiffUtil.ItemCallback` — smooth, efficient updates |
+| **Release Build** | R8 minification + resource shrinking; comprehensive ProGuard rules for Gson, ExoPlayer, Glide |
 | **JSON Cache** | Xtream playlists saved to `playlist.json` on disk for instant cold starts |
 | **Cache Cleanup** | `cleanupOldCaches()` deletes files >7 days or >100MB on every init |
 | **View Cache** | `setItemViewCacheSize(20)` on TV, `8` on phones — balances memory vs. scroll performance |
@@ -188,7 +197,9 @@ app/src/main/java/com/iptvcoco/app/
 - **Lint Clean** — `lintDebug` passes with **0 errors**
 - **No Hardcoded Colors** — All drawable XMLs reference `@color/` resources
 - **Minimum Touch Targets** — Every interactive view is at least **48dp** (Android TV accessibility requirement)
-- **Content Descriptions** — All `ImageButton`s and icon-only controls have `contentDescription`
+- **Content Descriptions** — All `ImageView`s, `ImageButton`s, and icon-only controls have `contentDescription`
+- **Autofill Ready** — Login fields declare proper `autofillHints`; search fields opt out with `importantForAutofill="no"`
+- **Input Types** — Every `EditText` specifies an appropriate `inputType`
 - **Text Legibility** — No text smaller than **12sp** on any screen
 
 ---

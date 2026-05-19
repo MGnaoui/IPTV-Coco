@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+    <!-- Dark background -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M0,0h320v180h-320z" />
+    <!-- Logo background rounded rect (centered, 80x80) -->
+    <path
+        android:fillColor="#0A84FF"
+        android:pathData="M120,50L200,50C204.42,50 208,53.58 208,58L208,122C208,126.42 204.42,130 200,130L120,130C115.58,130 112,126.42 112,122L112,58C112,53.58 115.58,50 120,50Z" />
+    <!-- Inner highlight for depth -->
+    <path
+        android:fillColor="#1C9DFF"
+        android:pathData="M120,54L200,54C202.21,54 204,55.79 204,58L204,80C204,77.79 202.21,76 200,76L120,76C117.79,76 116,77.79 116,80L116,58C116,55.79 117.79,54 120,54Z" />
+    <!-- TV screen frame -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M126,72L194,72C196.21,72 198,73.79 198,76L198,110C198,112.21 196.21,114 194,114L126,114C123.79,114 122,112.21 122,110L122,76C122,73.79 123.79,72 126,72Z" />
+    <!-- Screen inner -->
+    <path
+        android:fillColor="#0A0A0A"
+        android:pathData="M128,76L192,76C193.1,76 194,76.9 194,78L194,108C194,109.1 193.1,110 192,110L128,110C126.9,110 126,109.1 126,108L126,78C126,76.9 126.9,76 128,76Z" />
+    <!-- Play triangle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M146,84L146,104L172,94Z" />
+</vector>

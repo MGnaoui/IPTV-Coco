@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/app_name"
-            android:textColor="@color/red_netflix"
+            android:textColor="@color/accent"
             android:textSize="36sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/tvSubtitle"
@@ -116,6 +116,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
+                    android:autofillHints="url"
                     android:hint="@string/m3u_url"
                     android:inputType="textUri" />
 
@@ -125,6 +126,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
+                    android:autofillHints="username"
                     android:hint="@string/username"
                     android:inputType="text" />
 
@@ -134,12 +136,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
+                    android:autofillHints="password"
                     android:hint="@string/password"
                     android:inputType="textPassword" />
 
                 <Button
                     android:id="@+id/btnLogin"
-                    style="@style/NetflixButton"
+                    style="@style/PrimaryButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
@@ -162,7 +165,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="12dp"
-                    android:indeterminateTint="@color/red_netflix"
+                    android:indeterminateTint="@color/accent"
                     android:visibility="gone" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>

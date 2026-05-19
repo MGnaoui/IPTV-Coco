@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Premium Apple TV-inspired palette -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="red_netflix">#E50914</color>
-    <color name="red_netflix_dark">#B20710</color>
-    <color name="red_netflix_light">#F40612</color>
+
+    <!-- Primary accent: Premium blue (Apple-inspired) -->
+    <color name="accent">#0A84FF</color>
+    <color name="accent_dark">#0051D5</color>
+    <color name="accent_light">#5FA9FF</color>
 
     <!-- Modern dark palette -->
-    <color name="dark_background">#0F0F0F</color>
-    <color name="dark_surface">#1A1A1A</color>
-    <color name="dark_surface_elevated">#242424</color>
-    <color name="dark_card">#2D2D2D</color>
-    <color name="dark_card_hover">#363636</color>
+    <color name="dark_background">#000000</color>
+    <color name="dark_surface">#1C1C1E</color>
+    <color name="dark_surface_elevated">#2C2C2E</color>
+    <color name="dark_card">#2C2C2E</color>
+    <color name="dark_card_hover">#3A3A3C</color>
 
-    <color name="gray_text">#A0A0A0</color>
-    <color name="gray_text_secondary">#757575</color>
-    <color name="gray_divider">#333333</color>
+    <color name="gray_text">#8E8E93</color>
+    <color name="gray_text_secondary">#636366</color>
+    <color name="gray_divider">#38383A</color>
 
-    <color name="selected_highlight">#E50914</color>
-    <color name="focused_highlight">#26E50914</color>
-    <color name="focused_stroke">#E50914</color>
+    <!-- Legacy red names mapped to accent for compatibility -->
+    <!-- Legacy aliases kept for backward compatibility -->
+    <color name="red_netflix">@color/accent</color>
+    <color name="red_netflix_dark">@color/accent_dark</color>
+    <color name="red_netflix_light">@color/accent_light</color>
+
+    <!-- Focus / selection -->
+    <color name="selected_highlight">@color/accent</color>
+    <color name="focused_highlight">#260A84FF</color>
+    <color name="focused_stroke">@color/accent</color>
 
     <color name="transparent">#00000000</color>
     <color name="semi_transparent_black">#CC000000</color>
@@ -28,12 +38,14 @@
     <color name="overlay_gradient_end">#E6000000</color>
 
     <!-- Favorite colors -->
-    <color name="favorite_active">#E50914</color>
+    <color name="favorite_active">@color/accent</color>
     <color name="favorite_inactive">#80FFFFFF</color>
 
     <!-- Alpha variants for drawables -->
-    <color name="red_netflix_20">#33E50914</color>
-    <color name="red_netflix_30">#4DE50914</color>
+    <color name="accent_20">#330A84FF</color>
+    <color name="accent_30">#4D0A84FF</color>
+    <color name="accent_50">#800A84FF</color>
     <color name="black_70">#B3000000</color>
     <color name="white_40">#66FFFFFF</color>
+    <color name="error_red">#FF453A</color>
 </resources>
