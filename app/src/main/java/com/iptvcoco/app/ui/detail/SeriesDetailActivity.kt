@@ -83,6 +83,7 @@ class SeriesDetailActivity : AppCompatActivity() {
         }
 
         updateFavoriteButton()
+        binding.btnBack.setOnClickListener { finish() }
         binding.btnFavorite.setOnClickListener {
             repository.toggleFavoriteSeries(series.id)
             updateFavoriteButton()

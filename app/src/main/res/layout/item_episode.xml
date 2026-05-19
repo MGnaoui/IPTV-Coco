@@ -8,6 +8,7 @@
     android:focusable="true"
     android:gravity="center_vertical"
     android:orientation="horizontal"
+    android:minHeight="48dp"
     android:padding="12dp">
 
     <TextView
@@ -26,7 +27,7 @@
         android:layout_weight="1"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textColor="@color/gray_text"
+        android:textColor="@color/category_focused_text"
         android:textSize="14sp" />
 
 </LinearLayout>

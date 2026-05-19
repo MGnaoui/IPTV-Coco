@@ -71,6 +71,8 @@ class MovieDetailActivity : AppCompatActivity() {
             updateFavoriteButton()
         }
 
+        binding.btnBack.setOnClickListener { finish() }
+
         binding.btnStart.setOnClickListener {
             playMovie(movie, 0L)
         }

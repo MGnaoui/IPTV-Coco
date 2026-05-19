@@ -5,26 +5,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.iptvcoco.app.R
 import com.iptvcoco.app.model.Channel
+import com.iptvcoco.app.util.TvFocusHelper
 
 class ChannelAdapter(
     private val onChannelClick: (Channel) -> Unit,
     private val onFavoriteClick: ((String, Boolean) -> Unit)? = null,
     private val isFavorite: (String) -> Boolean = { false },
     private val layoutRes: Int = R.layout.item_channel
-) : RecyclerView.Adapter<ChannelAdapter.ViewHolder>() {
-
-    private var items = listOf<Channel>()
-
-    fun submitList(list: List<Channel>) {
-        items = list
-        notifyDataSetChanged()
-    }
+) : ListAdapter<Channel, ChannelAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -33,10 +29,8 @@ class ChannelAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(getItem(position))
     }
-
-    override fun getItemCount(): Int = items.size
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val logo: ImageView = itemView.findViewById(R.id.ivChannelLogo)
@@ -44,16 +38,17 @@ class ChannelAdapter(
         private val favoriteIcon: ImageView = itemView.findViewById(R.id.ivFavorite)
 
         init {
+            TvFocusHelper.apply(itemView)
             itemView.setOnClickListener {
-                val pos = adapterPosition
+                val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
-                    onChannelClick(items[pos])
+                    onChannelClick(getItem(pos))
                 }
             }
             favoriteIcon.setOnClickListener {
-                val pos = adapterPosition
+                val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
-                    val channel = items[pos]
+                    val channel = getItem(pos)
                     val fav = !isFavorite(channel.id)
                     onFavoriteClick?.invoke(channel.id, fav)
                     updateFavoriteIcon(fav)
@@ -87,5 +82,10 @@ class ChannelAdapter(
                 else itemView.context.getColor(R.color.favorite_inactive)
             )
         }
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<Channel>() {
+        override fun areItemsTheSame(oldItem: Channel, newItem: Channel) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Channel, newItem: Channel) = oldItem == newItem
     }
 }

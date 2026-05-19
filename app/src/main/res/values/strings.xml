@@ -19,6 +19,8 @@
     <string name="now_playing">Now Playing</string>
     <string name="pause">Pause</string>
     <string name="play">Play</string>
+    <string name="back">Back</string>
+    <string name="play_pause">Play / Pause</string>
     <string name="channel_up">Channel Up</string>
     <string name="channel_down">Channel Down</string>
     <string name="favorite">Favorite</string>

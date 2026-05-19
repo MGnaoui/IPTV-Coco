@@ -8,6 +8,8 @@
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:descendantFocusability="afterDescendants"
+        android:fillViewport="true"
         android:visibility="gone">
 
         <LinearLayout
@@ -15,7 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="12dp"
+            android:clipChildren="false">
 
             <!-- Row 1: Favorite Channels -->
             <TextView
@@ -29,8 +32,9 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvChannels"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" />
+                android:layout_height="120dp"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false" />
 
             <!-- Row 2: Favorite Movies -->
             <TextView
@@ -45,8 +49,9 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvMovies"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" />
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false" />
 
             <!-- Row 3: Favorite Series -->
             <TextView
@@ -61,8 +66,9 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvSeries"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" />
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

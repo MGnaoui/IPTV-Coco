@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.GestureDetector
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
@@ -348,6 +349,54 @@ class PlayerActivity : AppCompatActivity() {
                 if (isFav) getColor(R.color.red_netflix) else getColor(R.color.white)
             )
         }
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            // When controls are visible, allow normal focus navigation between buttons.
+            // Only intercept directional keys for media actions when controls are hidden.
+            when (event.keyCode) {
+                KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_BUTTON_A -> {
+                    if (!controlsVisible) {
+                        showControls()
+                        return true
+                    }
+                }
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    if (!controlsVisible && !isLive) {
+                        player?.let { it.seekTo((it.currentPosition - 10000).coerceAtLeast(0)) }
+                        showControls()
+                        return true
+                    }
+                }
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (!controlsVisible && !isLive) {
+                        player?.let { it.seekTo(it.currentPosition + 10000) }
+                        showControls()
+                        return true
+                    }
+                }
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    if (!controlsVisible && isLive && channelList.isNotEmpty()) {
+                        currentChannelIndex = (currentChannelIndex + 1) % channelList.size
+                        switchToChannel(channelList[currentChannelIndex])
+                        showControls()
+                        return true
+                    }
+                }
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    if (!controlsVisible && isLive && channelList.isNotEmpty()) {
+                        currentChannelIndex = (currentChannelIndex - 1 + channelList.size) % channelList.size
+                        switchToChannel(channelList[currentChannelIndex])
+                        showControls()
+                        return true
+                    }
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     @Deprecated("Deprecated in Java")

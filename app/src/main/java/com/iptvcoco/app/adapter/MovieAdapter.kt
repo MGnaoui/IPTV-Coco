@@ -5,25 +5,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.iptvcoco.app.R
 import com.iptvcoco.app.model.Movie
+import com.iptvcoco.app.util.TvFocusHelper
 
 class MovieAdapter(
     private val onMovieClick: (Movie) -> Unit,
     private val onFavoriteClick: ((String, Boolean) -> Unit)? = null,
     private val isFavorite: (String) -> Boolean = { false }
-) : RecyclerView.Adapter<MovieAdapter.ViewHolder>() {
-
-    private var items = listOf<Movie>()
-
-    fun submitList(list: List<Movie>) {
-        items = list
-        notifyDataSetChanged()
-    }
+) : ListAdapter<Movie, MovieAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -32,10 +28,8 @@ class MovieAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(getItem(position))
     }
-
-    override fun getItemCount(): Int = items.size
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val poster: ImageView = itemView.findViewById(R.id.ivPoster)
@@ -43,16 +37,17 @@ class MovieAdapter(
         private val favoriteIcon: ImageView = itemView.findViewById(R.id.ivFavorite)
 
         init {
+            TvFocusHelper.apply(itemView)
             itemView.setOnClickListener {
-                val pos = adapterPosition
+                val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
-                    onMovieClick(items[pos])
+                    onMovieClick(getItem(pos))
                 }
             }
             favoriteIcon.setOnClickListener {
-                val pos = adapterPosition
+                val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
-                    val movie = items[pos]
+                    val movie = getItem(pos)
                     val fav = !isFavorite(movie.id)
                     onFavoriteClick?.invoke(movie.id, fav)
                     updateFavoriteIcon(fav)
@@ -86,5 +81,10 @@ class MovieAdapter(
                 else itemView.context.getColor(R.color.favorite_inactive)
             )
         }
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<Movie>() {
+        override fun areItemsTheSame(oldItem: Movie, newItem: Movie) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Movie, newItem: Movie) = oldItem == newItem
     }
 }

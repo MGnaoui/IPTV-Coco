@@ -3,9 +3,13 @@ package com.iptvcoco.app.ui.main
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.iptvcoco.app.IPTVCocoApplication
@@ -18,6 +22,7 @@ import com.iptvcoco.app.ui.login.LoginActivity
 import com.iptvcoco.app.ui.movies.MoviesFragment
 import com.iptvcoco.app.ui.series.SeriesFragment
 import com.iptvcoco.app.util.AppLogger
+import com.iptvcoco.app.util.DeviceUtils
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -45,7 +50,6 @@ class MainActivity : AppCompatActivity() {
             switchTab(R.id.nav_live)
         } else {
             currentNavItemId = savedInstanceState.getInt("currentNavItemId", R.id.nav_live)
-            // Ensure only the current fragment is visible
             val transaction = supportFragmentManager.beginTransaction()
             listOf(R.id.nav_live, R.id.nav_movies, R.id.nav_series, R.id.nav_favorites).forEach { id ->
                 supportFragmentManager.findFragmentByTag(tagFor(id))?.let { fragment ->
@@ -70,17 +74,68 @@ class MainActivity : AppCompatActivity() {
         outState.putInt("currentNavItemId", currentNavItemId)
     }
 
+    /** TV: Intercept D-pad to jump between fragment content and bottom nav */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (DeviceUtils.isTv(this) && event.action == KeyEvent.ACTION_DOWN) {
+            when (event.keyCode) {
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    val focused = currentFocus
+                    if (focused != null && !isDescendantOf(focused, binding.bottomNav)) {
+                        jumpToBottomNav()
+                        return true
+                    }
+                }
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    val focused = currentFocus
+                    if (focused != null && isDescendantOf(focused, binding.bottomNav)) {
+                        jumpToFragmentContent()
+                        return true
+                    }
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
+    private fun isDescendantOf(child: View, parent: ViewGroup): Boolean {
+        var current: View? = child
+        while (current != null) {
+            if (current === parent) return true
+            current = current.parent as? View
+        }
+        return false
+    }
+
+    private fun jumpToBottomNav() {
+        val menuView = binding.bottomNav.getChildAt(0) as? ViewGroup
+        val target = menuView?.children?.find { it.id == binding.bottomNav.selectedItemId }
+        if (target?.requestFocus() != true) {
+            binding.bottomNav.requestFocus()
+        }
+    }
+
+    private fun jumpToFragmentContent() {
+        val fragment = supportFragmentManager.findFragmentByTag(tagFor(currentNavItemId))
+        val view = fragment?.view ?: return
+        // Try to focus the main RecyclerView in the current fragment
+        val target = view.findViewById<View>(R.id.rvMovies)
+            ?: view.findViewById<View>(R.id.rvSeries)
+            ?: view.findViewById<View>(R.id.rvChannels)
+            ?: view.findViewById<View>(R.id.rvCategories)
+        if (target?.requestFocus() != true) {
+            view.requestFocus()
+        }
+    }
+
     private fun switchTab(itemId: Int) {
         if (itemId == currentNavItemId) return
 
         val transaction = supportFragmentManager.beginTransaction()
 
-        // Hide current fragment
         supportFragmentManager.findFragmentByTag(tagFor(currentNavItemId))?.let {
             transaction.hide(it)
         }
 
-        // Show or add new fragment
         val tag = tagFor(itemId)
         var fragment = supportFragmentManager.findFragmentByTag(tag)
         if (fragment == null) {

@@ -4,20 +4,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.iptvcoco.app.R
 import com.iptvcoco.app.model.Episode
+import com.iptvcoco.app.util.TvFocusHelper
 
 class EpisodeAdapter(
     private val onEpisodeClick: (Episode) -> Unit
-) : RecyclerView.Adapter<EpisodeAdapter.ViewHolder>() {
-
-    private var items = listOf<Episode>()
-
-    fun submitList(list: List<Episode>) {
-        items = list
-        notifyDataSetChanged()
-    }
+) : ListAdapter<Episode, EpisodeAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -26,20 +22,19 @@ class EpisodeAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(getItem(position))
     }
-
-    override fun getItemCount(): Int = items.size
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val number: TextView = itemView.findViewById(R.id.tvEpisodeNumber)
         private val title: TextView = itemView.findViewById(R.id.tvEpisodeTitle)
 
         init {
+            TvFocusHelper.apply(itemView, scale = 1.03f)
             itemView.setOnClickListener {
-                val pos = adapterPosition
+                val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
-                    onEpisodeClick(items[pos])
+                    onEpisodeClick(getItem(pos))
                 }
             }
         }
@@ -48,5 +43,10 @@ class EpisodeAdapter(
             number.text = "E${episode.number}"
             title.text = episode.title
         }
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<Episode>() {
+        override fun areItemsTheSame(oldItem: Episode, newItem: Episode) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Episode, newItem: Episode) = oldItem == newItem
     }
 }

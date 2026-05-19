@@ -19,6 +19,7 @@ import com.iptvcoco.app.adapter.CategoryAdapter
 import com.iptvcoco.app.adapter.SeriesAdapter
 import com.iptvcoco.app.databinding.FragmentSeriesBinding
 import com.iptvcoco.app.ui.detail.SeriesDetailActivity
+import com.iptvcoco.app.util.DeviceUtils
 import com.iptvcoco.app.viewmodel.SeriesViewModel
 
 class SeriesFragment : Fragment() {
@@ -96,7 +97,7 @@ class SeriesFragment : Fragment() {
             layoutManager = GridLayoutManager(requireContext(), 3)
             adapter = seriesAdapter
             setHasFixedSize(true)
-            setItemViewCacheSize(20)
+            setItemViewCacheSize(DeviceUtils.getRecyclerViewCacheSize(requireContext()))
             post {
                 if (width > 0) {
                     val itemWidth = resources.getDimensionPixelSize(R.dimen.movie_item_width) +

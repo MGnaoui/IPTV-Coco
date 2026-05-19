@@ -5,18 +5,18 @@
     android:viewportHeight="120">
   <!-- Outer glow circle -->
   <path
-      android:fillColor="#33E50914"
+      android:fillColor="@color/red_netflix_20"
       android:pathData="M60,60m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0"/>
   <!-- Inner circle -->
   <path
-      android:fillColor="#E50914"
+      android:fillColor="@color/red_netflix"
       android:pathData="M60,60m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0"/>
   <!-- TV Screen -->
   <path
-      android:fillColor="#FFFFFF"
+      android:fillColor="@color/white"
       android:pathData="M35,45L35,75C35,78.3 37.7,81 41,81L79,81C82.3,81 85,78.3 85,75L85,45C85,41.7 82.3,39 79,39L41,39C37.7,39 35,41.7 35,45ZM41,45L79,45L79,75L41,75L41,45Z"/>
   <!-- Play Triangle -->
   <path
-      android:fillColor="#E50914"
+      android:fillColor="@color/red_netflix"
       android:pathData="M48,52L48,68L68,60L48,52Z"/>
 </vector>

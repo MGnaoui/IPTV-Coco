@@ -201,7 +201,6 @@ object M3UParser {
 
     internal fun generateMockEPG(channelName: String): List<EPGEntry> {
         val now = System.currentTimeMillis()
-        val hour = 3600000L
         return listOf(
             EPGEntry(
                 title = "Currently Playing on $channelName",

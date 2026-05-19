@@ -4,9 +4,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.iptvcoco.app.R
 import com.iptvcoco.app.model.Category
+import com.iptvcoco.app.util.TvFocusHelper
 
 class CategoryAdapter(
     private val onCategorySelected: (Category) -> Unit,
@@ -17,8 +19,15 @@ class CategoryAdapter(
     private var selectedPosition = 0
 
     fun submitList(list: List<Category>) {
+        val diffCallback = object : DiffUtil.Callback() {
+            override fun getOldListSize() = items.size
+            override fun getNewListSize() = list.size
+            override fun areItemsTheSame(oldPos: Int, newPos: Int) = items[oldPos].id == list[newPos].id
+            override fun areContentsTheSame(oldPos: Int, newPos: Int) = items[oldPos] == list[newPos]
+        }
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
         items = list
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 
     fun setSelected(position: Int) {
@@ -44,8 +53,9 @@ class CategoryAdapter(
         private val name: TextView = itemView.findViewById(R.id.tvCategoryName)
 
         init {
+            TvFocusHelper.apply(itemView, scale = 1.04f)
             itemView.setOnClickListener {
-                val pos = adapterPosition
+                val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
                     setSelected(pos)
                     onCategorySelected(items[pos])
@@ -56,20 +66,8 @@ class CategoryAdapter(
         fun bind(category: Category, isSelected: Boolean) {
             name.text = category.name
             itemView.isSelected = isSelected
-            if (layoutRes == R.layout.item_category_chip) {
-                // Chip style: background is handled by selector, just update text color
-                name.setTextColor(
-                    if (isSelected) itemView.context.getColor(R.color.white)
-                    else itemView.context.getColor(R.color.gray_text)
-                )
-            } else {
-                // List style
+            if (layoutRes != R.layout.item_category_chip) {
                 itemView.setBackgroundResource(R.drawable.bg_category_item)
-                if (isSelected) {
-                    name.setTextColor(itemView.context.getColor(R.color.white))
-                } else {
-                    name.setTextColor(itemView.context.getColor(R.color.gray_text))
-                }
             }
         }
     }

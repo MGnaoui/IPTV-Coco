@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dark_background"
+    android:descendantFocusability="afterDescendants"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,17 +30,33 @@
             app:layout_constraintStart_toStartOf="@id/ivBanner"
             app:layout_constraintTop_toTopOf="@id/ivBanner" />
 
+        <!-- Back button on banner -->
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="16dp"
+            android:background="@drawable/bg_favorite_badge"
+            android:contentDescription="@string/back"
+            android:foreground="@drawable/bg_circle_focused"
+            android:padding="10dp"
+            android:src="@drawable/ic_arrow_left"
+            app:tint="@color/white"
+            app:layout_constraintStart_toStartOf="@id/ivBanner"
+            app:layout_constraintTop_toTopOf="@id/ivBanner" />
+
         <!-- Favorite button on banner -->
         <ImageButton
             android:id="@+id/btnFavorite"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_margin="16dp"
             android:background="@drawable/bg_favorite_badge"
             android:contentDescription="@string/favorite"
+            android:foreground="@drawable/bg_circle_focused"
             android:padding="10dp"
             android:src="@drawable/ic_favorite"
-            android:tint="@color/white"
+            app:tint="@color/white"
             app:layout_constraintEnd_toEndOf="@id/ivBanner"
             app:layout_constraintTop_toTopOf="@id/ivBanner" />
 
@@ -71,13 +88,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="8dp"
-                    android:text="•"
-                    android:textColor="@color/gray_text"
-                    android:textSize="14sp" />
+                <TextView style="@style/BulletSeparator" />
 
                 <TextView
                     android:id="@+id/tvRating"
@@ -85,13 +96,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="8dp"
-                    android:text="•"
-                    android:textColor="@color/gray_text"
-                    android:textSize="14sp" />
+                <TextView style="@style/BulletSeparator" />
 
                 <TextView
                     android:id="@+id/tvYear"
@@ -137,6 +142,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
+                    android:focusable="true"
                     android:text="@string/start_watching" />
 
                 <Button
@@ -146,9 +152,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
+                    android:focusable="true"
                     android:text="@string/continue_watching"
                     android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

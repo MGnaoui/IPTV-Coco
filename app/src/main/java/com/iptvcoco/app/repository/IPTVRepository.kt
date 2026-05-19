@@ -27,6 +27,7 @@ class IPTVRepository(context: Context) {
     private var parsedPlaylist: M3UParser.ParsedPlaylist? = null
 
     init {
+        cleanupOldCaches()
         if (isLoggedIn()) {
             // Try M3U cache first
             if (cacheFile.exists()) {
@@ -34,7 +35,7 @@ class IPTVRepository(context: Context) {
                     val content = cacheFile.readText()
                     parsedPlaylist = M3UParser.parsePlaylist(content)
                 } catch (_: Exception) {
-                    // ignore parse errors on init
+                    cacheFile.delete()
                 }
             }
             // Fallback to JSON cache (Xtream)
@@ -43,7 +44,23 @@ class IPTVRepository(context: Context) {
                     val json = jsonCacheFile.readText()
                     parsedPlaylist = gson.fromJson(json, M3UParser.ParsedPlaylist::class.java)
                 } catch (_: Exception) {
-                    // ignore parse errors on init
+                    jsonCacheFile.delete()
+                }
+            }
+        }
+    }
+
+    private fun cleanupOldCaches() {
+        val maxAgeMs = 7L * 24 * 60 * 60 * 1000 // 7 days
+        val maxSizeBytes = 100L * 1024 * 1024 // 100 MB
+        val now = System.currentTimeMillis()
+
+        listOf(cacheFile, jsonCacheFile).forEach { file ->
+            if (file.exists()) {
+                val age = now - file.lastModified()
+                val size = file.length()
+                if (age > maxAgeMs || size > maxSizeBytes) {
+                    file.delete()
                 }
             }
         }

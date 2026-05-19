@@ -23,6 +23,7 @@ import com.iptvcoco.app.databinding.FragmentLiveTvBinding
 import com.iptvcoco.app.model.Channel
 import com.iptvcoco.app.ui.player.PlayerActivity
 import com.iptvcoco.app.R
+import com.iptvcoco.app.util.DeviceUtils
 import com.iptvcoco.app.viewmodel.LiveTVViewModel
 
 class LiveTVFragment : Fragment() {
@@ -104,7 +105,7 @@ class LiveTVFragment : Fragment() {
             layoutManager = GridLayoutManager(requireContext(), 4)
             adapter = channelAdapter
             setHasFixedSize(true)
-            setItemViewCacheSize(24)
+            setItemViewCacheSize(DeviceUtils.getRecyclerViewCacheSize(requireContext()))
             post {
                 if (width > 0) {
                     val itemWidth = resources.getDimensionPixelSize(R.dimen.channel_item_width_compact) +

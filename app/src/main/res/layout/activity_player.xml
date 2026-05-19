@@ -26,6 +26,7 @@
         android:layout_height="match_parent"
         android:background="@drawable/bg_player_controls"
         android:clickable="true"
+        android:descendantFocusability="afterDescendants"
         android:focusable="true"
         android:visibility="visible">
 
@@ -59,10 +60,14 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/skip_backward"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusRight="@id/btnChannelDown"
                 android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_skip_backward"
-                android:tint="@color/white"
+                app:tint="@color/white"
                 android:visibility="gone" />
 
             <ImageButton
@@ -71,20 +76,31 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="24dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/channel_down"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusLeft="@id/btnSkipBackward"
+                android:nextFocusRight="@id/btnPlayPause"
                 android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_channel_down"
-                android:tint="@color/white" />
+                app:tint="@color/white" />
 
             <ImageButton
                 android:id="@+id/btnPlayPause"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/play_pause"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusLeft="@id/btnChannelDown"
+                android:nextFocusRight="@id/btnChannelUp"
+                android:nextFocusUp="@id/btnBrightnessUp"
                 android:padding="14dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_pause"
-                android:tint="@color/white" />
+                app:tint="@color/white" />
 
             <ImageButton
                 android:id="@+id/btnChannelUp"
@@ -92,20 +108,29 @@
                 android:layout_height="48dp"
                 android:layout_marginStart="24dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/channel_up"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusLeft="@id/btnPlayPause"
+                android:nextFocusRight="@id/btnSkipForward"
                 android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_channel_up"
-                android:tint="@color/white" />
+                app:tint="@color/white" />
 
             <ImageButton
                 android:id="@+id/btnSkipForward"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/skip_forward"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusLeft="@id/btnChannelUp"
                 android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_skip_forward"
-                android:tint="@color/white"
+                app:tint="@color/white"
                 android:visibility="gone" />
         </LinearLayout>
 
@@ -120,24 +145,32 @@
 
             <ImageButton
                 android:id="@+id/btnBrightnessUp"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/brightness_up"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusDown="@id/btnPlayPause"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_brightness_up"
-                android:tint="@color/white" />
+                app:tint="@color/white" />
 
             <ImageButton
                 android:id="@+id/btnBrightnessDown"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/brightness_down"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusDown="@id/btnFavorite"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_brightness_down"
-                android:tint="@color/white" />
+                app:tint="@color/white" />
         </LinearLayout>
 
         <!-- Left side: volume -->
@@ -151,24 +184,32 @@
 
             <ImageButton
                 android:id="@+id/btnVolumeUp"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/volume_up"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusDown="@id/btnPlayPause"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_volume_up"
-                android:tint="@color/white" />
+                app:tint="@color/white" />
 
             <ImageButton
                 android:id="@+id/btnVolumeDown"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/volume_down"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusDown="@id/btnFavorite"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_volume_down"
-                android:tint="@color/white" />
+                app:tint="@color/white" />
         </LinearLayout>
 
         <!-- Bottom bar: slider + favorite -->
@@ -195,10 +236,14 @@
                 android:layout_height="48dp"
                 android:layout_marginStart="16dp"
                 android:background="@drawable/bg_button_circle"
+                android:contentDescription="@string/favorite"
+                android:focusable="true"
+                android:foreground="@drawable/bg_circle_focused"
+                android:nextFocusLeft="@id/seekBar"
                 android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_favorite"
-                android:tint="@color/white" />
+                app:tint="@color/white" />
         </LinearLayout>
     </FrameLayout>
 
